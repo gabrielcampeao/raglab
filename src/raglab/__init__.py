@@ -20,6 +20,7 @@ from raglab.generation import (
 from raglab.models import Chunk, Document, SearchResult
 from raglab.pipeline import Answer, RAGPipeline
 from raglab.prompting import DEFAULT_TEMPLATE, build_prompt, format_context
+from raglab.reranking import CrossTermReranker, Reranker, diversify_mmr
 from raglab.retrievers import (
     RETRIEVER_NAMES,
     BM25Retriever,
@@ -41,6 +42,7 @@ __all__ = [
     "Answer",
     "BM25Retriever",
     "Chunk",
+    "CrossTermReranker",
     "DenseRetriever",
     "Document",
     "Embedder",
@@ -55,6 +57,7 @@ __all__ = [
     "MetadataFilter",
     "OpenAICompatibleGenerator",
     "RAGPipeline",
+    "Reranker",
     "RetrievalReport",
     "Retriever",
     "SearchResult",
@@ -66,6 +69,7 @@ __all__ = [
     "chunk_markdown_documents",
     "chunk_text",
     "create_retriever",
+    "diversify_mmr",
     "evaluate_retrieval",
     "format_context",
     "load_cases",
