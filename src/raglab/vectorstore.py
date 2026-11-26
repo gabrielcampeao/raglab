@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Iterable, Sequence
+from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import asdict
 from pathlib import Path
 
@@ -9,7 +10,42 @@ from raglab.models import Chunk, SearchResult
 from raglab.vectormath import Vector, cosine_similarity
 
 
-class InMemoryVectorStore:
+def _matches_metadata(chunk: Chunk, filters: Mapping[str, str] | None) -> bool:
+    if not filters:
+        return True
+    return all(chunk.metadata.get(key) == value for key, value in filters.items())
+
+
+class VectorStore(ABC):
+    @abstractmethod
+    def __len__(self) -> int:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def dimensions(self) -> int | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def add(self, chunks: Iterable[Chunk], vectors: Iterable[Sequence[float]]) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def clear(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def search(
+        self,
+        query_vector: Sequence[float],
+        k: int = 3,
+        *,
+        filters: Mapping[str, str] | None = None,
+    ) -> list[SearchResult]:
+        raise NotImplementedError
+
+
+class InMemoryVectorStore(VectorStore):
     def __init__(self) -> None:
         self._chunks: list[Chunk] = []
         self._vectors: list[Vector] = []
@@ -42,7 +78,13 @@ class InMemoryVectorStore:
         self._chunks.clear()
         self._vectors.clear()
 
-    def search(self, query_vector: Sequence[float], k: int = 3) -> list[SearchResult]:
+    def search(
+        self,
+        query_vector: Sequence[float],
+        k: int = 3,
+        *,
+        filters: Mapping[str, str] | None = None,
+    ) -> list[SearchResult]:
         if k <= 0:
             raise ValueError("k must be positive")
         if not self._chunks:
@@ -54,6 +96,7 @@ class InMemoryVectorStore:
         results = [
             SearchResult(chunk=chunk, score=cosine_similarity(query_vector, vector))
             for chunk, vector in zip(self._chunks, self._vectors, strict=True)
+            if _matches_metadata(chunk, filters)
         ]
         results.sort(key=lambda result: (-result.score, result.chunk.id))
         return results[:k]

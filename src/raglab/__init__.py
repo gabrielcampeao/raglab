@@ -45,10 +45,10 @@ from raglab.retrievers import (
     create_retriever,
     matches_filters,
 )
-from raglab.vectorstore import InMemoryVectorStore
+from raglab.vectorstore import InMemoryVectorStore, VectorStore
 from raglab.verification import GroundingReport, verify_answer
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "DEFAULT_TEMPLATE",
@@ -80,6 +80,7 @@ __all__ = [
     "Retriever",
     "SearchResult",
     "TfidfEmbedder",
+    "VectorStore",
     "__version__",
     "build_prompt",
     "chunk_documents",

@@ -1,8 +1,7 @@
 # raglab
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Dependencies](https://img.shields.io/badge/runtime%20dependencies-zero-0f172a)
+![Qdrant](https://img.shields.io/badge/vector%20db-Qdrant%20%7C%20pgvector%20%7C%20Chroma-0f172a)
 
 `raglab` is a zero dependency two stage Retrieval Augmented Generation (RAG) engine, verification layer, and benchmark suite written in pure Python.
 
@@ -222,8 +221,4 @@ python scripts/generate_charts.py
 ## Known boundaries
 
 * `HashingEmbedder` and `TfidfEmbedder` operate on lexical tokens and word pairs. Plugging in dense neural embeddings requires subclassing `Embedder.embed` (roughly 15 lines of code).
-* `InMemoryVectorStore` runs exact linear cosine scans, suitable up to tens of thousands of chunks in a single Python process before approximate nearest neighbor indexing (`HNSW` or `IVF`) becomes necessary.
-
-## License
-
-Released under the [MIT License](LICENSE).
+* `InMemoryVectorStore` runs exact linear cosine scans for lightweight single process workloads, while `QdrantVectorStore`, `PgVectorStore`, and `ChromaVectorStore` scale to HNSW indexed vector collections.

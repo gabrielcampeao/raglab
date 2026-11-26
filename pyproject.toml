@@ -4,14 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "raglab"
-version = "0.2.0"
-description = "Zero dependency two stage Retrieval Augmented Generation engine and benchmark suite in Python"
+version = "0.3.0"
+description = "Two stage Retrieval Augmented Generation engine, ecosystem connectors, and SRE benchmark suite in Python"
 readme = "README.md"
 requires-python = ">=3.10"
-license = "MIT"
-license-files = ["LICENSE"]
 authors = [{ name = "Gabriel Campeao" }]
-keywords = ["rag", "llm", "retrieval", "reranking", "bm25", "mmr", "evaluation"]
+keywords = ["rag", "llm", "qdrant", "pgvector", "retrieval", "reranking", "bm25", "mmr"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -27,7 +25,10 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6"]
+qdrant = ["qdrant-client>=1.12"]
+chroma = ["chromadb>=0.5"]
+postgres = ["psycopg[binary]>=3.2"]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6", "qdrant-client>=1.12"]
 
 [project.scripts]
 raglab = "raglab.cli:main"

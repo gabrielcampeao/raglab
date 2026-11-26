@@ -20,4 +20,3 @@ These notes record the core architectural tradeoffs behind `raglab` so changes c
 | Second stage ranking | `CrossTermReranker` + `diversify_mmr` | Captures phrase proximity and heading alignment while eliminating redundant sibling chunks |
 | Guardrails | Coverage gated extraction + `verify_answer` | Catches out of bounds `[n]` markers and forces abstention on unsupported queries |
 | Benchmarks and visuals | Deterministic pure Python SVG generator | Eliminates stale screenshots and guarantees charts match live benchmark JSON |
-| License | MIT | Permissive reuse across commercial and academic work |

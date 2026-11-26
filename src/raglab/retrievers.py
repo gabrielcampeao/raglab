@@ -8,7 +8,7 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from raglab.embeddings import Embedder, HashingEmbedder, TfidfEmbedder
 from raglab.models import Chunk, SearchResult
 from raglab.text import tokenize
-from raglab.vectorstore import InMemoryVectorStore
+from raglab.vectorstore import InMemoryVectorStore, VectorStore
 
 RETRIEVER_NAMES = ("dense", "tfidf", "bm25", "hybrid")
 
@@ -52,7 +52,7 @@ class DenseRetriever(Retriever):
     def __init__(
         self,
         embedder: Embedder | None = None,
-        store: InMemoryVectorStore | None = None,
+        store: VectorStore | None = None,
         *,
         min_score: float = 0.0,
     ) -> None:
@@ -74,14 +74,8 @@ class DenseRetriever(Retriever):
         _check_k(k)
         if len(self.store) == 0:
             return []
-        limit = len(self.store) if filters else k
-        results = self.store.search(self.embedder.embed_query(query), limit)
-        filtered = [
-            result
-            for result in results
-            if result.score > self.min_score and matches_filters(result.chunk, filters)
-        ]
-        return filtered[:k]
+        results = self.store.search(self.embedder.embed_query(query), k, filters=filters)
+        return [result for result in results if result.score > self.min_score]
 
 
 class BM25Retriever(Retriever):
