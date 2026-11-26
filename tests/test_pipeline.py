@@ -91,3 +91,49 @@ def test_sample_knowledge_base_retrieval_quality(name: str, examples_dir: Path) 
 
     assert report.hit_rate >= 0.9
     assert report.mrr >= 0.8
+
+
+def test_pipeline_supports_markdown_reranking_mmr_budget_and_telemetry() -> None:
+    from raglab.reranking import CrossTermReranker
+
+    documents = [
+        Document(
+            id="pg.md",
+            text=(
+                "# Postgres pool saturation\n"
+                "## Immediate mitigation\n"
+                "Switch PgBouncer pool mode to transaction during connection saturation.\n"
+                "## Follow up\n"
+                "Terminate idle transactions older than thirty seconds."
+            ),
+            metadata={"source": "pg.md", "kind": "runbook"},
+        ),
+        Document(
+            id="postmortem.md",
+            text=(
+                "# April outage\n## Root cause\nConnection saturation started after retry storm."
+            ),
+            metadata={"source": "postmortem.md", "kind": "postmortem"},
+        ),
+    ]
+    pipeline = RAGPipeline(
+        reranker=CrossTermReranker(),
+        candidate_pool=10,
+        mmr_lambda=0.7,
+        max_context_tokens=120,
+        markdown_aware=True,
+        top_k=2,
+    )
+    pipeline.ingest(documents)
+
+    answer = pipeline.ask(
+        "What is the immediate mitigation for PgBouncer connection saturation?",
+        filters={"kind": "runbook"},
+    )
+
+    assert all(result.chunk.source == "pg.md" for result in answer.sources)
+    assert "transaction" in answer.text
+    assert answer.grounding.is_verified is True
+    assert answer.trace.total_ms >= 0.0
+    assert answer.trace.candidates_retrieved >= answer.trace.candidates_selected
+    assert answer.trace.context_tokens > 0

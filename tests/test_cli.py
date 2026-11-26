@@ -100,3 +100,29 @@ def test_version_flag(capsys: pytest.CaptureFixture[str]) -> None:
 
     assert exit_info.value.code == 0
     assert __version__ in capsys.readouterr().out
+
+
+def test_ask_supports_markdown_rerank_mmr_budget_and_trace(
+    examples_data: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    code = main(
+        [
+            "ask",
+            "How long do I have to request a refund?",
+            "--data",
+            str(examples_data),
+            "--markdown",
+            "--rerank",
+            "--mmr",
+            "0.75",
+            "--max-tokens",
+            "180",
+            "--show-trace",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert code == 0
+    assert "30 days" in output
+    assert "Trace:" in output
+    assert "Grounding:" in output

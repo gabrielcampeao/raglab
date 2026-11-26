@@ -9,7 +9,15 @@ from raglab.chunking import (
 )
 from raglab.documents import load_directory
 from raglab.embeddings import Embedder, HashingEmbedder, TfidfEmbedder
-from raglab.evaluation import EvalCase, RetrievalReport, evaluate_retrieval, load_cases
+from raglab.evaluation import (
+    EndToEndReport,
+    EvalCase,
+    RetrievalReport,
+    evaluate_by_category,
+    evaluate_pipeline,
+    evaluate_retrieval,
+    load_cases,
+)
 from raglab.generation import (
     NO_ANSWER,
     ExtractiveGenerator,
@@ -18,7 +26,7 @@ from raglab.generation import (
     OpenAICompatibleGenerator,
 )
 from raglab.models import Chunk, Document, SearchResult
-from raglab.pipeline import Answer, RAGPipeline
+from raglab.pipeline import Answer, PipelineTrace, RAGPipeline
 from raglab.prompting import (
     DEFAULT_TEMPLATE,
     build_prompt,
@@ -40,7 +48,7 @@ from raglab.retrievers import (
 from raglab.vectorstore import InMemoryVectorStore
 from raglab.verification import GroundingReport, verify_answer
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "DEFAULT_TEMPLATE",
@@ -53,6 +61,7 @@ __all__ = [
     "DenseRetriever",
     "Document",
     "Embedder",
+    "EndToEndReport",
     "EvalCase",
     "ExtractiveGenerator",
     "GenerationError",
@@ -64,6 +73,7 @@ __all__ = [
     "MarkdownSection",
     "MetadataFilter",
     "OpenAICompatibleGenerator",
+    "PipelineTrace",
     "RAGPipeline",
     "Reranker",
     "RetrievalReport",
@@ -79,6 +89,8 @@ __all__ = [
     "create_retriever",
     "diversify_mmr",
     "estimate_tokens",
+    "evaluate_by_category",
+    "evaluate_pipeline",
     "evaluate_retrieval",
     "format_context",
     "load_cases",

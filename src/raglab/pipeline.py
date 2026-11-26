@@ -1,15 +1,35 @@
 from __future__ import annotations
 
+import time
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
-from raglab.chunking import chunk_documents
+from raglab.chunking import chunk_documents, chunk_markdown_documents
 from raglab.documents import load_directory
 from raglab.generation import ExtractiveGenerator, Generator
 from raglab.models import Chunk, Document, SearchResult
-from raglab.prompting import DEFAULT_TEMPLATE, build_prompt
-from raglab.retrievers import HybridRetriever, Retriever
+from raglab.prompting import (
+    DEFAULT_TEMPLATE,
+    build_prompt,
+    estimate_tokens,
+    format_context,
+    pack_context,
+)
+from raglab.reranking import Reranker, diversify_mmr
+from raglab.retrievers import HybridRetriever, MetadataFilter, Retriever
+from raglab.verification import GroundingReport, verify_answer
+
+
+@dataclass(frozen=True)
+class PipelineTrace:
+    retrieval_ms: float
+    rerank_ms: float
+    generation_ms: float
+    total_ms: float
+    candidates_retrieved: int
+    candidates_selected: int
+    context_tokens: int
 
 
 @dataclass(frozen=True)
@@ -18,6 +38,8 @@ class Answer:
     text: str
     sources: tuple[SearchResult, ...]
     prompt: str
+    grounding: GroundingReport
+    trace: PipelineTrace
 
 
 class RAGPipeline:
@@ -26,6 +48,11 @@ class RAGPipeline:
         retriever: Retriever | None = None,
         generator: Generator | None = None,
         *,
+        reranker: Reranker | None = None,
+        candidate_pool: int = 15,
+        mmr_lambda: float | None = None,
+        max_context_tokens: int | None = None,
+        markdown_aware: bool = False,
         max_chars: int = 500,
         overlap: int = 1,
         top_k: int = 3,
@@ -37,8 +64,19 @@ class RAGPipeline:
             raise ValueError("overlap cannot be negative")
         if top_k <= 0:
             raise ValueError("top_k must be positive")
+        if candidate_pool <= 0:
+            raise ValueError("candidate_pool must be positive")
+        if mmr_lambda is not None and not 0.0 <= mmr_lambda <= 1.0:
+            raise ValueError("mmr_lambda must be between 0 and 1")
+        if max_context_tokens is not None and max_context_tokens <= 0:
+            raise ValueError("max_context_tokens must be positive")
         self.retriever = retriever if retriever is not None else HybridRetriever()
         self.generator = generator if generator is not None else ExtractiveGenerator()
+        self.reranker = reranker
+        self.candidate_pool = candidate_pool
+        self.mmr_lambda = mmr_lambda
+        self.max_context_tokens = max_context_tokens
+        self.markdown_aware = markdown_aware
         self.max_chars = max_chars
         self.overlap = overlap
         self.top_k = top_k
@@ -50,7 +88,8 @@ class RAGPipeline:
         return tuple(self._chunks)
 
     def ingest(self, documents: Iterable[Document]) -> int:
-        new_chunks = chunk_documents(documents, self.max_chars, self.overlap)
+        chunker = chunk_markdown_documents if self.markdown_aware else chunk_documents
+        new_chunks = chunker(documents, self.max_chars, self.overlap)
         self._chunks.extend(new_chunks)
         self.retriever.index(self._chunks)
         return len(new_chunks)
@@ -58,15 +97,86 @@ class RAGPipeline:
     def ingest_directory(self, path: str | Path) -> int:
         return self.ingest(load_directory(path))
 
-    def retrieve(self, question: str, k: int | None = None) -> list[SearchResult]:
+    def _select_candidates(
+        self,
+        question: str,
+        k: int | None = None,
+        *,
+        filters: MetadataFilter | None = None,
+    ) -> tuple[list[SearchResult], float, float, int]:
         if not question.strip():
             raise ValueError("The question must not be empty")
         if not self._chunks:
             raise RuntimeError("Ingest documents before asking questions")
-        return self.retriever.retrieve(question, k or self.top_k)
+        limit = k or self.top_k
+        uses_post_stage = self.reranker is not None or self.mmr_lambda is not None
+        pool = max(limit, self.candidate_pool) if uses_post_stage else limit
 
-    def ask(self, question: str, k: int | None = None) -> Answer:
-        results = self.retrieve(question, k)
-        prompt = build_prompt(question, results, self.template)
-        text = self.generator.generate(question, prompt, results)
-        return Answer(question=question, text=text, sources=tuple(results), prompt=prompt)
+        start_retrieval = time.perf_counter()
+        raw_results = (
+            self.retriever.retrieve(question, pool, filters=filters)
+            if filters is not None
+            else self.retriever.retrieve(question, pool)
+        )
+        retrieval_ms = (time.perf_counter() - start_retrieval) * 1000.0
+
+        start_rerank = time.perf_counter()
+        selected = list(raw_results)
+        if self.reranker is not None and selected:
+            rerank_limit = None if self.mmr_lambda is not None else limit
+            selected = self.reranker.rerank(question, selected, k=rerank_limit)
+        if self.mmr_lambda is not None and selected:
+            selected = diversify_mmr(selected, k=limit, lambda_weight=self.mmr_lambda)
+        else:
+            selected = selected[:limit]
+        rerank_ms = (time.perf_counter() - start_rerank) * 1000.0
+
+        return selected, retrieval_ms, rerank_ms, len(raw_results)
+
+    def retrieve(
+        self,
+        question: str,
+        k: int | None = None,
+        *,
+        filters: MetadataFilter | None = None,
+    ) -> list[SearchResult]:
+        selected, _, _, _ = self._select_candidates(question, k, filters=filters)
+        return selected
+
+    def ask(
+        self,
+        question: str,
+        k: int | None = None,
+        *,
+        filters: MetadataFilter | None = None,
+    ) -> Answer:
+        selected, retrieval_ms, rerank_ms, raw_count = self._select_candidates(
+            question, k, filters=filters
+        )
+        if self.max_context_tokens is not None and selected:
+            selected = pack_context(selected, self.max_context_tokens)
+        prompt = build_prompt(question, selected, self.template)
+        context_tokens = estimate_tokens(format_context(selected)) if selected else 0
+
+        start_generation = time.perf_counter()
+        text = self.generator.generate(question, prompt, selected)
+        generation_ms = (time.perf_counter() - start_generation) * 1000.0
+
+        grounding = verify_answer(text, selected)
+        trace = PipelineTrace(
+            retrieval_ms=retrieval_ms,
+            rerank_ms=rerank_ms,
+            generation_ms=generation_ms,
+            total_ms=retrieval_ms + rerank_ms + generation_ms,
+            candidates_retrieved=raw_count,
+            candidates_selected=len(selected),
+            context_tokens=context_tokens,
+        )
+        return Answer(
+            question=question,
+            text=text,
+            sources=tuple(selected),
+            prompt=prompt,
+            grounding=grounding,
+            trace=trace,
+        )
