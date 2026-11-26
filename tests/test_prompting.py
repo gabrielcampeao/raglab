@@ -1,7 +1,13 @@
 import pytest
 
 from raglab.models import Chunk, SearchResult
-from raglab.prompting import EMPTY_CONTEXT, build_prompt, format_context
+from raglab.prompting import (
+    EMPTY_CONTEXT,
+    build_prompt,
+    estimate_tokens,
+    format_context,
+    pack_context,
+)
 
 
 def _result(source: str, text: str) -> SearchResult:
@@ -38,3 +44,33 @@ def test_build_prompt_accepts_custom_templates() -> None:
 def test_build_prompt_rejects_templates_without_placeholders() -> None:
     with pytest.raises(ValueError):
         build_prompt("Q?", [], template="Only {question}")
+
+
+def test_format_context_includes_section_when_present() -> None:
+    chunk = Chunk(
+        id="pg#0",
+        text="Switch pool mode to transaction.",
+        document_id="pg",
+        position=0,
+        metadata={"source": "pg.md", "section": "PgBouncer > Mitigation"},
+    )
+
+    formatted = format_context([SearchResult(chunk=chunk, score=1.0)])
+
+    assert (
+        formatted == "[1] source: pg.md (PgBouncer > Mitigation)\nSwitch pool mode to transaction."
+    )
+
+
+def test_pack_context_respects_token_budget_and_keeps_at_least_top_result() -> None:
+    results = [
+        _result("a.md", " ".join(["alpha"] * 20)),
+        _result("b.md", " ".join(["bravo"] * 20)),
+        _result("c.md", " ".join(["charlie"] * 20)),
+    ]
+
+    packed = pack_context(results, max_tokens=60)
+
+    assert [item.chunk.source for item in packed] == ["a.md", "b.md"]
+    assert estimate_tokens(format_context(packed)) <= 60
+    assert len(pack_context(results, max_tokens=5)) == 1

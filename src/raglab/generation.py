@@ -35,23 +35,44 @@ class Generator(ABC):
 
 
 class ExtractiveGenerator(Generator):
-    def __init__(self, max_sentences: int = 2) -> None:
+    def __init__(
+        self,
+        max_sentences: int = 2,
+        *,
+        min_shared_terms: int = 1,
+        min_overlap_ratio: float = 0.0,
+    ) -> None:
         if max_sentences <= 0:
             raise ValueError("max_sentences must be positive")
+        if min_shared_terms <= 0:
+            raise ValueError("min_shared_terms must be positive")
+        if not 0.0 <= min_overlap_ratio <= 1.0:
+            raise ValueError("min_overlap_ratio must be between 0 and 1")
         self.max_sentences = max_sentences
+        self.min_shared_terms = min_shared_terms
+        self.min_overlap_ratio = min_overlap_ratio
 
     def generate(self, question: str, prompt: str, results: Sequence[SearchResult]) -> str:
         query_terms = set(tokenize(question))
+        if not query_terms:
+            return NO_ANSWER
+        required_terms = min(self.min_shared_terms, len(query_terms))
         candidates: list[tuple[int, int, int, str]] = []
         seen: set[str] = set()
         for source_number, result in enumerate(results, start=1):
+            section_terms = set(tokenize(result.chunk.metadata.get("section", "")))
             for position, sentence in enumerate(split_sentences(result.chunk.text)):
-                if sentence.startswith("#") or sentence in seen:
+                if sentence.startswith(("#", "```")) or sentence in seen:
                     continue
                 seen.add(sentence)
-                overlap = len(query_terms & set(tokenize(sentence)))
-                if overlap:
-                    candidates.append((overlap, source_number, position, sentence))
+                sentence_terms = set(tokenize(sentence))
+                direct_overlap = len(query_terms & sentence_terms)
+                if direct_overlap == 0:
+                    continue
+                effective_overlap = len(query_terms & (sentence_terms | section_terms))
+                coverage = effective_overlap / len(query_terms)
+                if effective_overlap >= required_terms and coverage >= self.min_overlap_ratio:
+                    candidates.append((direct_overlap, source_number, position, sentence))
         if not candidates:
             return NO_ANSWER
         candidates.sort(key=lambda candidate: (-candidate[0], candidate[1], candidate[2]))

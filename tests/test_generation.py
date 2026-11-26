@@ -128,3 +128,29 @@ def test_openai_generator_rejects_unexpected_responses(response: dict[str, Any])
 
     with pytest.raises(GenerationError):
         generator.generate("q", "p", [])
+
+
+def test_extractive_generator_abstains_on_weak_single_term_coincidence() -> None:
+    results = [
+        _result("slo.md", "Service timeout budget is 200 milliseconds at p99."),
+    ]
+    generator = ExtractiveGenerator(min_shared_terms=2, min_overlap_ratio=0.34)
+
+    answer = generator.generate(
+        "What is our GraphQL federation gateway timeout?",
+        "",
+        results,
+    )
+
+    assert answer == NO_ANSWER
+
+
+def test_extractive_generator_clamps_min_shared_terms_for_single_token_queries() -> None:
+    results = [
+        _result("pg.md", "PgBouncer pools connections in transaction mode."),
+    ]
+    generator = ExtractiveGenerator(min_shared_terms=2, min_overlap_ratio=0.34)
+
+    answer = generator.generate("What is PgBouncer?", "", results)
+
+    assert answer == "PgBouncer pools connections in transaction mode. [1]"

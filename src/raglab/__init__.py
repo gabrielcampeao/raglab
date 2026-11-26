@@ -19,7 +19,13 @@ from raglab.generation import (
 )
 from raglab.models import Chunk, Document, SearchResult
 from raglab.pipeline import Answer, RAGPipeline
-from raglab.prompting import DEFAULT_TEMPLATE, build_prompt, format_context
+from raglab.prompting import (
+    DEFAULT_TEMPLATE,
+    build_prompt,
+    estimate_tokens,
+    format_context,
+    pack_context,
+)
 from raglab.reranking import CrossTermReranker, Reranker, diversify_mmr
 from raglab.retrievers import (
     RETRIEVER_NAMES,
@@ -32,6 +38,7 @@ from raglab.retrievers import (
     matches_filters,
 )
 from raglab.vectorstore import InMemoryVectorStore
+from raglab.verification import GroundingReport, verify_answer
 
 __version__ = "0.1.0"
 
@@ -50,6 +57,7 @@ __all__ = [
     "ExtractiveGenerator",
     "GenerationError",
     "Generator",
+    "GroundingReport",
     "HashingEmbedder",
     "HybridRetriever",
     "InMemoryVectorStore",
@@ -70,11 +78,14 @@ __all__ = [
     "chunk_text",
     "create_retriever",
     "diversify_mmr",
+    "estimate_tokens",
     "evaluate_retrieval",
     "format_context",
     "load_cases",
     "load_directory",
     "matches_filters",
+    "pack_context",
     "split_markdown_sections",
     "split_sentences",
+    "verify_answer",
 ]
