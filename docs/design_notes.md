@@ -1,45 +1,23 @@
-# Design notes
+# Engineering design notes
 
-These notes record the decisions made before writing code, so later changes can be checked against the original intent.
+These notes record the core architectural tradeoffs behind `raglab` so changes can be evaluated against explicit constraints. See [architecture_spec.md](architecture_spec.md) for the full 0.2 specification and design review Q and A.
 
-## Intent
+## Core constraints
 
-raglab is a study project. It exists to explain how Retrieval Augmented Generation works by implementing every stage in code short enough to read in one sitting. Someone who finishes the README, the guide in `docs/how_rag_works.md` and the examples should be able to explain what each stage does, why it is there, and what changes when its settings change.
+* **Zero runtime dependencies:** Implementing tokenization, feature hashing, TFIDF, Okapi BM25, Reciprocal Rank Fusion, cross feature reranking, Maximal Marginal Relevance, token budgeting, citation verification, and SVG benchmark plotting in pure Python keeps every equation transparent and ensures the package installs cleanly in airgapped or minimal environments.
+* **Two stage precision over single stage recall:** Single stage vector or BM25 lookup struggles on multi document questions and sibling chunk redundancy. Separating candidate generation (`HybridRetriever`) from rescoring (`CrossTermReranker`) and diversification (`diversify_mmr`) mirrors production search stacks at miniature scale.
+* **Explicit abstention and verification:** Every `Answer` carries both a `PipelineTrace` and a `GroundingReport`. A pipeline that scores `1.00` on answerable questions while fabricating citations on out of scope traps is unsafe in production.
+* **Self documenting code:** Python modules omit inline comments and docstrings entirely, relying on small pure functions, frozen dataclasses, and explicit type signatures.
 
-## Goals
+## Summary of technical choices
 
-* Cover the full loop: load, chunk, embed, store, retrieve, augment, generate and evaluate.
-* Run offline with no runtime dependencies, so `pip install` and the tests work anywhere Python 3.10 runs.
-* Show more than one retrieval strategy and a way to measure them against each other.
-* Make the jump to a real language model a one line change.
-* Include realistic examples of how RAG is used.
-
-## Non goals
-
-* Production performance. Brute force cosine search and dense Python lists are fine for thousands of chunks.
-* Neural embeddings in the core package. They need large downloads and would hide the math. The `Embedder` interface leaves room to plug one in.
-* Vendor SDKs. One small HTTP client covers OpenAI and every server that copies its API.
-
-## Anti goals
-
-* Magic. If a stage cannot be understood by reading its module, the design has failed even if the tests pass.
-* Answers without sources. Every answer path keeps track of which chunks it used.
-
-## Decisions
-
-| Area | Decision | Reason |
+| Subsystem | Choice | Rationale |
 | --- | --- | --- |
-| Language | Python 3.10 or newer, standard library only | Readable and widely taught |
-| Chunking | Sentence packing with sentence overlap | Easier to reason about than token windows |
-| Embeddings | Feature hashing and TFIDF | Transparent, deterministic, no downloads |
-| Retrieval | Dense, BM25 and hybrid with RRF | Shows the tradeoff between keyword and vector search |
-| Generation | Extractive by default, OpenAI compatible client optional | Tests stay offline, and real models are one flag away |
-| Evaluation | Hit rate, MRR and recall at k | The standard first metrics for retrieval |
-| Style | No comments or docstrings; names and types carry the meaning | Keeps modules short and pushes toward clear names |
-| Commits | Conventional Commits checked by a local hook | Readable history for a study log |
-| License | MIT | Simple and permissive |
-
-## Left to the builder
-
-* The sample knowledge base topic. A fictional note taking app was chosen because support questions are the most common RAG use case.
-* Exact default values (`max_chars=500`, `overlap=1`, `top_k=3`, `rrf_k=60`), based on common starting points.
+| Language floor | Python 3.10+ standard library | Structural pattern matching, `pairwise`, modern union types, zero external wheel churn |
+| Structural ingestion | ATX heading stack + atomic code fences | Keeps SQL and shell commands intact and attaches `section` breadcrumbs to every chunk |
+| First stage retrieval | Dense cosine + Okapi BM25 fused via RRF (`k=60`) | Scale invariant rank fusion combining exact identifier recall with n gram similarity |
+| Metadata filtering | Prefiltering inside each retriever | Prevents dominant services from starving small metadata slices |
+| Second stage ranking | `CrossTermReranker` + `diversify_mmr` | Captures phrase proximity and heading alignment while eliminating redundant sibling chunks |
+| Guardrails | Coverage gated extraction + `verify_answer` | Catches out of bounds `[n]` markers and forces abstention on unsupported queries |
+| Benchmarks and visuals | Deterministic pure Python SVG generator | Eliminates stale screenshots and guarantees charts match live benchmark JSON |
+| License | MIT | Permissive reuse across commercial and academic work |

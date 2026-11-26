@@ -1,143 +1,123 @@
-# How RAG works
+# How RAG works: algorithms, geometry, and failure modes
 
-This guide walks through Retrieval Augmented Generation one stage at a time and points to the module in `src/raglab` that implements each stage. Reading the guide next to the code is the fastest way to build an intuition for it.
+This guide traces a query through every stage of `raglab`, states the exact formulas used in `src/raglab`, and explains why naive single stage pipelines break on operational corpora.
 
-## The problem
+![Two stage RAG architecture in raglab](assets/architecture_overview.svg)
 
-A large language model writes text by predicting the next token from patterns it learned during training. That gives it broad general knowledge, with three limits that matter in practice:
+## Why language models fail on private operational knowledge
 
-1. It knows nothing about documents it never saw, such as your internal wiki or a policy written last month.
-2. Its knowledge stops at the training cutoff.
-3. When it lacks a fact, it often produces a fluent guess instead of admitting the gap.
+Autoregressive language models compress statistical regularities from their training corpus into model weights. That mechanism has three structural blind spots in engineering environments:
 
-Fine tuning can teach a model new style or behavior, but it is a poor way to store facts that change. Retrieval Augmented Generation takes a different route: keep the facts in documents, find the relevant ones at question time, and hand them to the model inside the prompt.
+1. **Private state:** Model weights never saw internal runbooks, postmortems, architecture records, or tenant contracts.
+2. **Temporal drift:** Operational thresholds, on call escalation paths, and schema policies change weekly; retraining or fine tuning weights to track mutable facts is slow and brittle and still cannot guarantee exact recall.
+3. **Uncalibrated extrapolation:** Optimize for next token likelihood without evidence and the model produces plausible commands or flags that do not exist.
 
-## Two phases
+Retrieval Augmented Generation turns open book question answering into an explicit systems pipeline: index authoritative documents ahead of time, retrieve and rerank a compact set of high signal passages at query time, pack them under a strict token budget with source identifiers, and verify that every emitted sentence is supported by the cited passages.
 
-A RAG system does its work in two phases. Indexing happens ahead of time, whenever documents change. Answering happens on every question.
+## Phase 1: Offline structural indexing
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant R as Retriever
-    participant I as Index
-    participant P as Prompt builder
-    participant M as Language model
-    Note over I: Indexing ran earlier: load, chunk, embed, store
-    U->>R: question
-    R->>I: search with the question
-    I-->>R: top k chunks with scores
-    R->>P: question and chunks
-    P->>M: grounded prompt
-    M-->>U: answer with citations
-```
+### Document ingestion and metadata enrichment
 
-## Indexing
+[documents.py](../src/raglab/documents.py) loads plain text and Markdown files into immutable `Document(id, text, metadata)` records. In operational systems such as [projects/incident_copilot](../projects/incident_copilot/copilot.py), ingestion enriches each document with domain facets (`kind=runbook`, `service=postgres`) before chunking. Those facets travel onto every `Chunk` so retrieval can prefilter the search space before scoring.
 
-### Loading
+### Structure aware Markdown chunking
 
-[documents.py](../src/raglab/documents.py) walks a folder and turns every Markdown or text file into a `Document` with an id and a `source` field. Real systems also parse PDFs, HTML, tickets or database rows, but whatever the input, the output is the same: plain text plus metadata saying where it came from. That metadata is what later lets an answer cite its sources.
+Splitting strictly on character count or sentence punctuation causes two classic defects on technical documents:
 
-### Chunking
+* A paragraph saying `Switch pool_mode to transaction immediately.` gets separated from its `## Immediate mitigation` heading three paragraphs above, stripping away the terms that identify *when* to apply it.
+* Fenced SQL or shell commands (` ```sql ... ``` `) get sliced mid statement across two chunks.
 
-Documents are usually too long to paste whole into a prompt, and a long document often covers several topics. Retrieval works better on smaller pieces, so [chunking.py](../src/raglab/chunking.py) splits each document into chunks.
+`chunk_markdown_documents` in [chunking.py](../src/raglab/chunking.py) parses ATX headings (`#` through `######`) into a hierarchical stack and stores the active path on every chunk (`metadata["section"] = "Postgres connection pool saturation > Immediate mitigation"`). Fenced code blocks shorter than `max_chars` remain atomic units, while prose sentences pack into windows with configurable sentence `overlap`.
 
-The chunker splits on sentence boundaries and packs sentences into chunks of at most `max_chars` characters. With `overlap=1`, the last sentence of one chunk is repeated at the start of the next, so a fact that sits on a boundary still appears whole in at least one chunk.
+![Chunk size tradeoff curve](assets/chunk_size_tradeoff.svg)
 
-Chunk size is a tradeoff:
+As the sweep above shows on the `Atlas Pay` benchmark, `max_chars` governs a direct tradeoff between **context precision** and **token cost**. Very large chunks (`1400` chars) collapse entire documents into single chunks; retrieving `top_k = 3` then drags two unrelated documents into every single document answer, dropping `Precision@3` to `0.38` and pushing average context size to `466` tokens. Keeping chunks near `220` to `340` characters preserves `0.99` `NDCG@3` at roughly one third of the token budget.
 
-* Small chunks are precise, but a single chunk may lack the surrounding context needed to answer.
-* Large chunks carry more context, but they dilute the match score and use more of the prompt budget.
+### Lexical and dense vector representations
 
-A few hundred to a thousand characters is a common starting point. The sample data uses 500.
+[embeddings.py](../src/raglab/embeddings.py) provides two deterministic vectorizers:
 
-### Embedding
-
-To search by meaning, each chunk becomes a vector: a list of numbers where similar texts land close together. [embeddings.py](../src/raglab/embeddings.py) offers two embedders that need no model download.
-
-`HashingEmbedder` tokenizes the text, adds word pairs (bigrams), and hashes each feature into one of 1024 slots. It has no vocabulary and no training step, so it can embed any text at any time and the resulting index can be saved and reloaded without refitting.
-
-`TfidfEmbedder` learns a vocabulary from the corpus and weights each term by how rare it is. A word that appears in every chunk tells you little, so it gets a low weight. The weight for a term is:
+* **`HashingEmbedder`:** Applies the signed feature hashing trick (`blake2b` 64 bit digest) over normalized unigrams and adjacent bigrams into `D = 1024` dimensions with sublinear term frequency scaling `1 + ln(tf)`, followed by L2 normalization. Alternating signs cancel collision bias in expectation, and statelessness allows saving and reloading indexes without persisting a vocabulary file.
+* **`TfidfEmbedder`:** Fits a corpus vocabulary and weights each feature by smoothed inverse document frequency:
 
 ```text
-idf(term) = ln((1 + N) / (1 + df(term))) + 1
+idf(t) = ln((1 + N) / (1 + df(t))) + 1
+w(t, d) = (1 + ln(tf(t, d))) * idf(t)
 ```
 
-where `N` is the number of chunks and `df(term)` is how many chunks contain the term.
-
-Both produce sparse, word based vectors. Production systems use neural embedding models, which map "refund" and "money back" to nearby vectors even though they share no words. The interface stays the same: implement `Embedder.embed` and the rest of raglab works unchanged.
-
-### Storing
-
-[vectorstore.py](../src/raglab/vectorstore.py) keeps chunks and vectors side by side in memory. Search computes the cosine similarity between the query vector and every stored vector:
+Both produce L2 normalized vectors in [vectorstore.py](../src/raglab/vectorstore.py), where cosine similarity reduces to the inner product:
 
 ```text
-cosine(a, b) = (a . b) / (|a| * |b|)
+cosine(q, d) = (q . d) / (||q|| * ||d||)
 ```
 
-A score of 1 means the vectors point the same way. A score of 0 means they share nothing. Comparing against every vector is fine for thousands of chunks. Vector databases such as FAISS, pgvector or Qdrant use approximate nearest neighbor indexes to do the same job over millions.
+Both retrievers index `f"{section}\n{chunk.text}"` whenever `metadata["section"]` is present, making section titles searchable alongside body sentences.
 
-## Answering
+## Phase 2: Two stage online retrieval and diversification
 
-### Retrieval
+### Metadata prefiltering
 
-[retrievers.py](../src/raglab/retrievers.py) has three strategies.
+Filtering *after* top k retrieval fails whenever the target subset (`kind=postmortem, service=edge`) represents a small fraction of the corpus, because unfiltered top k slots fill up with higher scoring chunks from other services. [retrievers.py](../src/raglab/retrievers.py) evaluates `matches_filters(chunk, filters)` *before* top k truncation across `DenseRetriever`, `BM25Retriever`, and `HybridRetriever`.
 
-Dense retrieval embeds the question with the same embedder used for the chunks and returns the closest vectors.
+### Okapi BM25 and Reciprocal Rank Fusion
 
-BM25 is the classic keyword ranking function behind many search engines. It rewards chunks that contain the query terms, gives rare terms more weight, and stops rewarding repeated terms after a point so a chunk cannot win by repeating one word:
+`BM25Retriever` scores query terms with term frequency saturation (`k1 = 1.5`) and document length normalization (`b = 0.75`):
 
 ```text
-score(chunk) = sum over query terms t of
-    idf(t) * f(t) * (k1 + 1) / (f(t) + k1 * (1 - b + b * length / average_length))
+BM25(q, d) = sum over t in q of
+    idf(t) * tf(t, d) * (k1 + 1) / (tf(t, d) + k1 * (1 - b + b * |d| / avgdl))
 ```
 
-`f(t)` is how often the term appears in the chunk. `k1` controls how quickly repeated terms stop adding score, and `b` controls how much long chunks are penalized.
-
-Hybrid retrieval runs both and merges the rankings with Reciprocal Rank Fusion:
+Because cosine scores live in `[-1, 1]` while BM25 scores are unbounded positive sums, linear score addition is brittle without per corpus calibration. `HybridRetriever` merges candidate lists by rank position using Reciprocal Rank Fusion (`rrf_k = 60`):
 
 ```text
-fused(chunk) = sum over retrievers of 1 / (rrf_k + rank)
+RRF(d) = sum over retrievers r of 1 / (rrf_k + rank_r(d))
 ```
 
-RRF only looks at positions, not raw scores, so it can combine cosine similarities and BM25 scores that live on completely different scales. Keyword search catches exact names, codes and numbers. Semantic search catches paraphrases. Together they miss less than either one alone, which is why hybrid search is the default in raglab.
+### Second stage cross feature reranking and MMR
 
-### Augmentation
+First stage retrievers score bag of words statistics across the entire index. Once `HybridRetriever` narrows the corpus down to a candidate pool (16 chunks by default), [reranking.py](../src/raglab/reranking.py) applies two richer operations at negligible latency cost:
 
-[prompting.py](../src/raglab/prompting.py) assembles the prompt. Each retrieved chunk gets a number and its source, followed by the question and three rules: use only the context, say "I don't know" when the context is not enough, and cite sources by number. Run `raglab ask ... --show-prompt` to see the exact text a model would receive.
+1. **`CrossTermReranker`:** Combines normalized first stage prior (`0.25`), distinct query term coverage (`0.35`), ordered bigram overlap plus tightest multi term window span (`0.25`), and section heading overlap (`0.15`). A chunk where `connection pool saturation` appears contiguously under a matching heading outranks a chunk where those three words appear 40 tokens apart.
+2. **`diversify_mmr` (Maximal Marginal Relevance):** Greedily selects `k` chunks maximizing relevance minus Jaccard token redundancy against chunks already chosen:
 
-Those rules carry most of the weight in reducing made up answers. The model is no longer asked "what do you know about refunds?" but "according to these passages, what is the refund window?"
+```text
+MMR(c) = lambda * norm_score(c) - (1 - lambda) * max_{s in Selected} Jaccard(tokens(c), tokens(s))
+```
 
-### Generation
+![Pipeline ablation benchmark](assets/retrieval_ablation.svg)
 
-[generation.py](../src/raglab/generation.py) has two generators.
+On multi document synthesis questions in the `Incident Copilot` benchmark, raw `Hybrid RRF` drops to `0.74` `NDCG@3` because three overlapping chunks from one long document crowd out the second required document. Adding `CrossTermReranker` and `diversify_mmr` lifts multi document `NDCG@3` to `0.97` and overall `Recall@3` to `1.00`.
 
-`ExtractiveGenerator` runs offline. It scores every sentence in the retrieved chunks by how many question terms it shares and returns the best ones with their citation numbers. It cannot rephrase or reason, but it makes the retrieval step visible: if the right chunk was retrieved, the answer is there.
+## Phase 3: Token budgeted prompting and grounding verification
 
-`OpenAICompatibleGenerator` sends the prompt to any server that speaks the OpenAI chat completions protocol. That includes OpenAI itself and local servers such as Ollama, LM Studio and vLLM. This is where a real model reads the context and writes a fluent answer.
+### Token budget packing
 
-## Evaluating retrieval
+Fixed `top_k` ignores chunk length variance. `pack_context` in [prompting.py](../src/raglab/prompting.py) estimates token footprint (`ceil(words * 1.3)`) and packs ranked chunks greedily until adding the next chunk would exceed `max_context_tokens`, formatting each entry with its citation index, source path, and section breadcrumb.
 
-If the retriever does not find the right chunk, no model can produce the right answer. That makes retrieval the first thing to measure. [evaluation.py](../src/raglab/evaluation.py) takes a list of questions labeled with the documents that answer them and reports:
+### Post generation citation and abstention verification
 
-* Hit rate at k: the share of questions where at least one relevant chunk is in the top k.
-* MRR (mean reciprocal rank): the average of `1 / rank` of the first relevant chunk. It rewards putting the right chunk first.
-* Recall at k: the share of all relevant documents that appear in the top k.
+[verification.py](../src/raglab/verification.py) inspects every generated answer before returning it to the caller and attaches a `GroundingReport`:
 
-Run `examples/03_compare_retrievers.py` or `raglab evaluate` to compare the four retrievers on the sample questions. Some of those questions are worded differently from the documents ("money back" instead of "refund"). On this small corpus the hashing based dense retriever puts the right chunk first for 10 of the 12 questions, while TFIDF, BM25 and hybrid get all 12. A perfect score on twelve questions says little about a real corpus, so treat the numbers as a demonstration of the method and grow the question set along with your documents.
+* **Citation bounds:** Extracts all `[n]` markers and flags any index outside `1..len(sources)` in `invalid_citations`.
+* **Claim attribution:** Splits the answer into claim segments, resolves each segment's cited sources, and checks that at least `40%` of the claim's normalized content tokens appear in those cited passages (`grounded_ratio`).
+* **Trap abstention:** Detects explicit refusal responses when evidence is absent (`abstained=True`). Paired with query coverage thresholds in `ExtractiveGenerator`, this eliminates false answers on out of scope infrastructure questions (`100%` abstention accuracy vs `0%` to `25%` on unguarded baselines).
 
-## Common failure modes
+![Quality versus latency frontier](assets/latency_vs_quality.svg)
 
-| Symptom | Likely cause | What to try |
+## Diagnostic guide for production incidents
+
+| Observed failure | Root stage | Concrete remediation in raglab |
 | --- | --- | --- |
-| The answer ignores an obvious document | The chunk was never retrieved | Check with `raglab search`, try hybrid retrieval, add synonyms to the query |
-| The answer is half right | The fact was split across chunks | Increase `max_chars` or `overlap` |
-| The model invents details | Weak grounding instructions or irrelevant context | Tighten the template, lower `k`, filter by score |
-| Exact codes or names are missed | Pure semantic search | Add BM25 through hybrid retrieval |
-| Paraphrased questions fail | Pure keyword search | Use a neural embedding model |
+| Exact error codes (`SQLSTATE 53300`, `HTTP 429`) miss rank 1 | Dense collision or dilution | Use `HybridRetriever` or `BM25Retriever` so high IDF tokens dominate |
+| Remediation steps lose context from parent headings | Naive flat chunking | Enable `markdown_aware=True` so `metadata["section"]` travels with every chunk |
+| Top 3 results repeat variations of the same paragraph | Sibling chunk redundancy | Set `mmr_lambda=0.65` to penalize Jaccard overlap in `diversify_mmr` |
+| Multi service corpus surfaces postmortems during live triage | Unscoped search space | Pass `filters={"kind": "runbook", "service": "postgres"}` for prefiltering |
+| Out of scope questions return confident wrong citations | Weak abstention threshold | Configure `min_shared_terms=2, min_overlap_ratio=0.34` and inspect `answer.grounding.is_verified` |
 
-## Further reading
+## Primary references
 
-* Lewis et al., 2020, "Retrieval Augmented Generation for Knowledge Intensive NLP Tasks", the paper that named the technique.
-* Robertson and Zaragoza, 2009, "The Probabilistic Relevance Framework: BM25 and Beyond".
-* Cormack, Clarke and Buettcher, 2009, "Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods".
+* Patrick Lewis et al., 2020, *Retrieval Augmented Generation for Knowledge Intensive NLP Tasks*, NeurIPS.
+* Stephen Robertson and Hugo Zaragoza, 2009, *The Probabilistic Relevance Framework: BM25 and Beyond*, Foundations and Trends in Information Retrieval.
+* Gordon V. Cormack, Charles L. A. Clarke, and Stefan Buettcher, 2009, *Reciprocal Rank Fusion Outperforms Condorcet and Individual Rank Learning Methods*, SIGIR.
+* Jaime Carbonell and Jade Goldstein, 1998, *The Use of MMR, Diversity Based Reranking for Reordering Documents and Producing Summaries*, SIGIR.
