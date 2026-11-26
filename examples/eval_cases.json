@@ -1,0 +1,14 @@
+[
+  {"question": "How long do I have to ask for my money back?", "relevant_sources": ["refunds.md"]},
+  {"question": "How much does the Plus plan cost per year?", "relevant_sources": ["pricing.md"]},
+  {"question": "Is there a discount for students?", "relevant_sources": ["pricing.md"]},
+  {"question": "How do I turn on two factor authentication?", "relevant_sources": ["security.md"]},
+  {"question": "What happens when the same note is edited on two devices offline?", "relevant_sources": ["sync.md"]},
+  {"question": "Can I bring my Evernote notes with me?", "relevant_sources": ["getting_started.md"]},
+  {"question": "What is the shortcut to create a new note?", "relevant_sources": ["keyboard_shortcuts.md"]},
+  {"question": "Where is my data stored?", "relevant_sources": ["security.md"]},
+  {"question": "Can I get a refund for a purchase made in the App Store?", "relevant_sources": ["refunds.md"]},
+  {"question": "How big can attachments be on the free plan?", "relevant_sources": ["sync.md"]},
+  {"question": "Do you use my notes to train AI models?", "relevant_sources": ["security.md"]},
+  {"question": "How do I force a full resync?", "relevant_sources": ["sync.md"]}
+]
