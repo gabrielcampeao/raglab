@@ -114,16 +114,39 @@ def split_markdown_sections(text: str) -> list[MarkdownSection]:
 def _split_code_block(block: str, max_chars: int) -> list[str]:
     if len(block) <= max_chars:
         return [block]
-    units: list[str] = []
-    for line in block.splitlines():
-        stripped = line.strip()
+    lines = block.splitlines()
+    open_fence = lines[0].strip()
+    has_closing_fence = len(lines) > 1 and lines[-1].lstrip().startswith("```")
+    close_fence = "```"
+    body_lines = lines[1:-1] if has_closing_fence else lines[1:]
+    overhead = len(open_fence) + len(close_fence) + 2
+
+    if max_chars > overhead + 10:
+        inner_budget = max_chars - overhead
+        inner_units: list[str] = []
+        for raw_line in body_lines:
+            preserved = raw_line.rstrip()
+            if not preserved.strip():
+                continue
+            if len(preserved) > inner_budget:
+                inner_units.extend(_split_long_sentence(preserved.strip(), inner_budget))
+            else:
+                inner_units.append(preserved)
+        return [
+            f"{open_fence}\n{piece}\n{close_fence}"
+            for piece in _pack_units(inner_units, inner_budget, overlap=0)
+        ]
+
+    fallback_units: list[str] = []
+    for raw_line in lines:
+        stripped = raw_line.strip()
         if not stripped:
             continue
         if len(stripped) > max_chars:
-            units.extend(_split_long_sentence(stripped, max_chars))
+            fallback_units.extend(_split_long_sentence(stripped, max_chars))
         else:
-            units.append(stripped)
-    return _pack_units(units, max_chars, overlap=0)
+            fallback_units.append(stripped)
+    return _pack_units(fallback_units, max_chars, overlap=0)
 
 
 def _section_units(body: str, max_chars: int) -> list[str]:

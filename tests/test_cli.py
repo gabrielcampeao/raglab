@@ -126,3 +126,34 @@ def test_ask_supports_markdown_rerank_mmr_budget_and_trace(
     assert "30 days" in output
     assert "Trace:" in output
     assert "Grounding:" in output
+
+
+def test_cli_rejects_malformed_filter_key_or_value(
+    examples_data: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert main(["search", "refund", "--data", str(examples_data), "--filter", "kind="]) == 1
+    assert "Invalid filter" in capsys.readouterr().err
+
+
+def test_cli_evaluate_on_incident_copilot_reproduces_scoped_triage_hits(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    root = Path(__file__).resolve().parents[1] / "projects" / "incident_copilot"
+    code = main(
+        [
+            "evaluate",
+            "--data",
+            str(root / "corpus"),
+            "--cases",
+            str(root / "benchmark.json"),
+            "--markdown",
+            "--rerank",
+            "--mmr",
+            "0.65",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert code == 0
+    hybrid_line = next(line for line in output.splitlines() if line.startswith("hybrid"))
+    assert "1.00" in hybrid_line

@@ -31,3 +31,23 @@ def test_load_directory_accepts_custom_suffixes(tmp_path: Path) -> None:
 def test_load_directory_raises_for_missing_directory(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         load_directory(tmp_path / "missing")
+
+
+def test_load_directory_merges_optional_metadata_manifest(tmp_path: Path) -> None:
+    import json
+
+    (tmp_path / "runbooks").mkdir()
+    (tmp_path / "runbooks" / "pg.md").write_text("Pool saturation fix.", encoding="utf-8")
+    (tmp_path / "metadata.json").write_text(
+        json.dumps({"runbooks/pg.md": {"kind": "runbook", "service": "postgres"}}),
+        encoding="utf-8",
+    )
+
+    documents = load_directory(tmp_path)
+
+    assert len(documents) == 1
+    assert documents[0].metadata == {
+        "source": "runbooks/pg.md",
+        "kind": "runbook",
+        "service": "postgres",
+    }

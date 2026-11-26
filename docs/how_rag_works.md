@@ -31,7 +31,7 @@ Splitting strictly on character count or sentence punctuation causes two classic
 
 ![Chunk size tradeoff curve](assets/chunk_size_tradeoff.svg)
 
-As the sweep above shows on the `Atlas Pay` benchmark, `max_chars` governs a direct tradeoff between **context precision** and **token cost**. Very large chunks (`1400` chars) collapse entire documents into single chunks; retrieving `top_k = 3` then drags two unrelated documents into every single document answer, dropping `Precision@3` to `0.38` and pushing average context size to `466` tokens. Keeping chunks near `220` to `340` characters preserves `0.99` `NDCG@3` at roughly one third of the token budget.
+As the flat sentence chunking sweep above shows on the `Atlas Pay` benchmark, `max_chars` governs a direct tradeoff between **context precision** and **token cost**. Very large chunks (`1400` chars) collapse entire documents into single chunks; retrieving `top_k = 3` then drags two unrelated documents into every single document answer, dropping `Precision@3` from `0.88` to `0.38` and pushing average context size to `466` tokens. Keeping chunks near `220` to `340` characters preserves `0.99` `NDCG@3` at roughly one third of the token budget (`59` flat chunks at `340` chars, or `43` structural chunks once `markdown_aware=True` aligns boundaries with headings).
 
 ### Lexical and dense vector representations
 

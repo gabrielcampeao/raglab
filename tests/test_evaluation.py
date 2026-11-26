@@ -168,3 +168,21 @@ def test_evaluate_pipeline_scores_grounding_and_abstention() -> None:
     assert report.retrieval.hit_rate == 1.0
     assert report.abstention_accuracy == 1.0
     assert report.verified_rate == 1.0
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        [{"question": "How?", "relevant_sources": "a.md"}],
+        [{"question": "How?", "relevant_sources": 123}],
+        [{"question": 123, "relevant_sources": ["a.md"]}],
+    ],
+)
+def test_load_cases_rejects_non_list_sources_and_non_string_questions(
+    tmp_path: Path, content: object
+) -> None:
+    path = tmp_path / "bad_cases.json"
+    path.write_text(json.dumps(content), encoding="utf-8")
+
+    with pytest.raises(ValueError):
+        load_cases(path)

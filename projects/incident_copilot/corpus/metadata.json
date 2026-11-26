@@ -1,0 +1,50 @@
+{
+  "architecture/idempotency_and_ledger.md": {
+    "kind": "architecture",
+    "service": "ledger"
+  },
+  "architecture/slo_and_burn_rates.md": {
+    "kind": "architecture",
+    "service": "observability"
+  },
+  "architecture/zero_downtime_migrations.md": {
+    "kind": "architecture",
+    "service": "postgres"
+  },
+  "postmortems/checkout_double_charge_2026_04.md": {
+    "kind": "postmortem",
+    "service": "ledger"
+  },
+  "postmortems/eu_region_failover_2026_07.md": {
+    "kind": "postmortem",
+    "service": "postgres"
+  },
+  "postmortems/rate_limiter_false_positives_2026_09.md": {
+    "kind": "postmortem",
+    "service": "edge"
+  },
+  "runbooks/kafka_consumer_lag.md": {
+    "kind": "runbook",
+    "service": "kafka"
+  },
+  "runbooks/kubernetes_oomkilled.md": {
+    "kind": "runbook",
+    "service": "kubernetes"
+  },
+  "runbooks/payment_webhook_backlog.md": {
+    "kind": "runbook",
+    "service": "webhooks"
+  },
+  "runbooks/postgres_pool_saturation.md": {
+    "kind": "runbook",
+    "service": "postgres"
+  },
+  "runbooks/redis_cache_stampede.md": {
+    "kind": "runbook",
+    "service": "redis"
+  },
+  "runbooks/tls_certificate_rotation.md": {
+    "kind": "runbook",
+    "service": "edge"
+  }
+}

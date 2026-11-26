@@ -172,3 +172,23 @@ def test_extractive_generator_accepts_three_direct_term_matches_on_long_question
     )
 
     assert "Mobile clients retried timed out payment calls" in answer
+
+
+def test_extractive_generator_never_slices_single_clause_out_of_fenced_sql() -> None:
+    sql_chunk = (
+        "Run the diagnostic query first.\n"
+        "```sql\n"
+        "SELECT partition_id, lag_messages\n"
+        "FROM ops_kafka_lag_snapshot\n"
+        "WHERE consumer_group = 'settlement_projector';\n"
+        "```"
+    )
+    results = [_result("kafka.md", sql_chunk)]
+
+    answer = ExtractiveGenerator(max_sentences=1).generate(
+        "settlement_projector lag_messages query", "", results
+    )
+
+    assert "FROM ops_kafka_lag_snapshot [1]" not in answer
+    if "SELECT partition_id" in answer:
+        assert "WHERE consumer_group" in answer

@@ -137,3 +137,15 @@ def test_pipeline_supports_markdown_reranking_mmr_budget_and_telemetry() -> None
     assert answer.trace.total_ms >= 0.0
     assert answer.trace.candidates_retrieved >= answer.trace.candidates_selected
     assert answer.trace.context_tokens > 0
+
+
+def test_pipeline_rejects_non_positive_k_in_retrieve_and_ask(
+    sample_documents: list[Document],
+) -> None:
+    pipeline = RAGPipeline()
+    pipeline.ingest(sample_documents)
+
+    with pytest.raises(ValueError):
+        pipeline.retrieve("refund", k=0)
+    with pytest.raises(ValueError):
+        pipeline.ask("refund", k=0)

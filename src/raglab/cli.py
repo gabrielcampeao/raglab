@@ -102,6 +102,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="apply second stage reranking on top of each retriever",
     )
+    evaluate.add_argument(
+        "--mmr",
+        type=float,
+        default=None,
+        help="apply Maximal Marginal Relevance with lambda between 0 and 1",
+    )
     evaluate.set_defaults(handler=_run_evaluate)
     return parser
 
@@ -121,7 +127,10 @@ def _parse_cli_filters(items: Sequence[str]) -> dict[str, str] | None:
         if "=" not in entry:
             raise ValueError(f"Invalid filter '{entry}'. Expected KEY=VALUE")
         key, value = entry.split("=", 1)
-        parsed[key.strip()] = value.strip()
+        clean_key, clean_value = key.strip(), value.strip()
+        if not clean_key or not clean_value:
+            raise ValueError(f"Invalid filter '{entry}'. Expected non empty KEY=VALUE")
+        parsed[clean_key] = clean_value
     return parsed
 
 
@@ -211,6 +220,8 @@ def _run_evaluate(args: argparse.Namespace) -> int:
     documents = _load_documents(args.data)
     cases = load_cases(args.cases)
     answerable_count = sum(1 for case in cases if case.answerable)
+    if answerable_count == 0:
+        raise ValueError("At least one answerable evaluation case is required")
     print(f"Evaluated {answerable_count} questions with k={args.k}")
     print()
     print(f"{'retriever':<10} {'hit rate':>9} {'mrr':>7} {'ndcg':>7} {'recall':>7}")

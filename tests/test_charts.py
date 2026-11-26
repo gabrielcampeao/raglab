@@ -31,3 +31,32 @@ def test_all_svg_charts_exist_parse_as_xml_and_avoid_em_dashes() -> None:
         assert "\u2014" not in raw
         root = ET.fromstring(raw)
         assert root.tag.endswith("svg")
+
+
+def test_svg_charts_match_generator_output_and_live_ablation_metrics() -> None:
+    from projects.incident_copilot.copilot import run_ablation_suite
+    from scripts.generate_charts import (
+        render_ablation_svg,
+        render_architecture_svg,
+        render_chunk_sweep_svg,
+        render_latency_quality_svg,
+    )
+
+    payload = json.loads(RESULTS_PATH.read_text(encoding="utf-8"))
+    assert (ASSETS_DIR / "architecture_overview.svg").read_text(
+        encoding="utf-8"
+    ) == render_architecture_svg()
+    assert (ASSETS_DIR / "retrieval_ablation.svg").read_text(
+        encoding="utf-8"
+    ) == render_ablation_svg(payload["ablation"])
+    assert (ASSETS_DIR / "chunk_size_tradeoff.svg").read_text(
+        encoding="utf-8"
+    ) == render_chunk_sweep_svg(payload["chunk_sweep"])
+    assert (ASSETS_DIR / "latency_vs_quality.svg").read_text(
+        encoding="utf-8"
+    ) == render_latency_quality_svg(payload["ablation"])
+
+    live = run_ablation_suite()["configurations"]["senior_full"]
+    recorded = payload["ablation"]["configurations"]["senior_full"]
+    for key in ("hit_rate_at_1", "ndcg_at_3", "recall_at_3", "abstention_accuracy"):
+        assert live[key] == recorded[key]

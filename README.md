@@ -38,11 +38,11 @@ All charts below are generated directly from [benchmark_results.json](projects/i
 
 | Configuration | Chunks | Hit@1 | MRR@3 | NDCG@3 | Multi doc NDCG@3 | Trap abstention | Verified E2E | Mean latency |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `dense` (128d unigram hash, unfiltered) | 66 | 0.90 | 0.95 | 0.93 | 0.67 | 0.25 | 0.88 | 3.2 ms |
-| `tfidf` (unigram cosine, unfiltered) | 66 | 1.00 | 1.00 | 0.98 | 0.87 | 0.00 | 0.83 | 16.5 ms |
-| `bm25` (lexical Okapi BM25, unfiltered) | 66 | 1.00 | 1.00 | 0.98 | 0.87 | 0.00 | 0.83 | 0.6 ms |
-| `hybrid_rrf` (Dense + BM25 + metadata prefilter) | 66 | 1.00 | 1.00 | 0.96 | 0.74 | 0.00 | 0.83 | 21.0 ms |
-| `senior_full` (Markdown + Hybrid RRF + Rerank + MMR + Guardrail) | 43 | 1.00 | 1.00 | 1.00 | 0.97 | 1.00 | 0.96 | 17.4 ms |
+| `dense` (128d unigram hash, unfiltered) | 66 | 0.90 | 0.95 | 0.93 | 0.67 | 0.25 | 0.88 | 4.0 ms |
+| `tfidf` (unigram cosine, unfiltered) | 66 | 1.00 | 1.00 | 0.98 | 0.87 | 0.00 | 0.83 | 16.8 ms |
+| `bm25` (lexical Okapi BM25, unfiltered) | 66 | 1.00 | 1.00 | 0.98 | 0.87 | 0.00 | 0.83 | 0.8 ms |
+| `hybrid_rrf` (Dense + BM25 + metadata prefilter) | 66 | 1.00 | 1.00 | 0.96 | 0.74 | 0.00 | 0.83 | 24.1 ms |
+| `senior_full` (Markdown + Hybrid RRF + Rerank + MMR + Guardrail) | 43 | 1.00 | 1.00 | 1.00 | 0.97 | 1.00 | 0.96 | 18.7 ms |
 
 Three findings stand out in the ablation data:
 
@@ -54,17 +54,17 @@ Three findings stand out in the ablation data:
 
 ![Chunk size tradeoff curve](docs/assets/chunk_size_tradeoff.svg)
 
-Sweeping `max_chars` from `140` to `1400` characters exposes the tension between context precision and prompt cost:
+Sweeping flat sentence `max_chars` from `140` to `1400` characters exposes the tension between context precision and prompt cost:
 
-* Below `220` characters, chunks fragment individual runbook procedures across boundaries (`77` to `101` chunks).
-* Around `340` characters, `NDCG@3` holds at `0.99` with `Precision@3` at `0.78` while consuming an average of `159` context tokens per query.
-* At `1400` characters, each document collapses into a single chunk (`12` chunks total). With `top_k = 3`, every single document question pulls two unrelated full documents into the prompt, dropping `Precision@3` from `0.82` to `0.38` and nearly tripling prompt cost to `466` tokens.
+* Below `220` characters, chunks fragment individual runbook procedures across boundaries (`77` to `116` chunks).
+* Around `340` characters, `NDCG@3` holds at `0.99` with `Precision@3` at `0.78` while consuming an average of `159` context tokens per query (`59` flat chunks, or `43` chunks once `markdown_aware=True` aligns splits with headings).
+* At `1400` characters, each document collapses into a single chunk (`12` chunks total). With `top_k = 3`, every single document question pulls two unrelated full documents into the prompt, dropping `Precision@3` from `0.88` to `0.38` and nearly tripling prompt cost to `466` tokens.
 
 ### Quality versus latency
 
 ![Quality versus latency frontier](docs/assets/latency_vs_quality.svg)
 
-Pure lexical `BM25` resolves queries in `0.6 ms`, making it a strong first stage filter, while the full two stage pipeline (`senior_full`) completes hybrid retrieval, cross term reranking over 16 candidates, MMR selection, context packing, extraction, and citation verification in `17.4 ms` per query in pure Python without C extensions.
+Pure lexical `BM25` resolves queries in `0.8 ms`, making it a strong first stage filter, while the full two stage pipeline (`senior_full`) completes hybrid retrieval, cross term reranking over 16 candidates, MMR selection, context packing, extraction, and citation verification in `18.7 ms` per query in pure Python without C extensions.
 
 ## Flagship application: Atlas Pay Incident Copilot
 
@@ -202,7 +202,7 @@ raglab/
 ├── examples/                    focused scripts demonstrating individual API capabilities
 ├── docs/                        technical guides, architecture spec, and generated SVG charts
 ├── scripts/                     commit message validator and deterministic SVG chart generator
-└── tests/                       179 unit, integration, example, copilot, and chart verification tests
+└── tests/                       191 unit, integration, example, copilot, and chart verification tests
 ```
 
 ## Verification and engineering standards

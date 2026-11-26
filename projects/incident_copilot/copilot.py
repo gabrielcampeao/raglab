@@ -29,26 +29,11 @@ PROJECT_DIR = Path(__file__).resolve().parent
 CORPUS_DIR = PROJECT_DIR / "corpus"
 BENCHMARK_PATH = PROJECT_DIR / "benchmark.json"
 
-_FOLDER_KINDS = {
-    "runbooks": "runbook",
-    "postmortems": "postmortem",
-    "architecture": "architecture",
-}
 
-_FILE_SERVICES = {
-    "postgres_pool_saturation.md": "postgres",
-    "kafka_consumer_lag.md": "kafka",
-    "redis_cache_stampede.md": "redis",
-    "kubernetes_oomkilled.md": "kubernetes",
-    "tls_certificate_rotation.md": "edge",
-    "payment_webhook_backlog.md": "webhooks",
-    "checkout_double_charge_2026_04.md": "ledger",
-    "eu_region_failover_2026_07.md": "postgres",
-    "rate_limiter_false_positives_2026_09.md": "edge",
-    "idempotency_and_ledger.md": "ledger",
-    "zero_downtime_migrations.md": "postgres",
-    "slo_and_burn_rates.md": "observability",
-}
+def load_incident_corpus(root: Path | None = None) -> list[Document]:
+    target = root if root is not None else CORPUS_DIR
+    return load_directory(target)
+
 
 PLAYBOOK_QUESTIONS: tuple[tuple[str, dict[str, str] | None], ...] = (
     (
@@ -96,23 +81,6 @@ class _UnfilteredAdapter(Retriever):
         filters: Any = None,
     ) -> list[SearchResult]:
         return self.inner.retrieve(query, k)
-
-
-def load_incident_corpus(root: Path | None = None) -> list[Document]:
-    target = root if root is not None else CORPUS_DIR
-    raw_documents = load_directory(target)
-    enriched: list[Document] = []
-    for document in raw_documents:
-        parts = Path(document.id).parts
-        folder = parts[0] if len(parts) > 1 else ""
-        filename = parts[-1]
-        metadata = {
-            **document.metadata,
-            "kind": _FOLDER_KINDS.get(folder, "general"),
-            "service": _FILE_SERVICES.get(filename, "platform"),
-        }
-        enriched.append(Document(id=document.id, text=document.text, metadata=metadata))
-    return enriched
 
 
 def build_incident_copilot(

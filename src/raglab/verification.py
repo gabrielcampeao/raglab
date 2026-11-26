@@ -9,7 +9,7 @@ from raglab.models import SearchResult
 from raglab.text import tokenize
 
 _CITATION_PATTERN = re.compile(r"\[(\d+)\]")
-_CLAIM_SEGMENT_PATTERN = re.compile(r"[^.!?\n]+[.!?]?(?:\s*\[\d+\])*")
+_SEGMENT_SPLIT = re.compile(r"(?<=[.!?])\s+(?!\[)|(?<=\])\s+(?!\[)|\n+")
 _ABSTENTION_PHRASES = (
     "could not find an answer",
     "do not know",
@@ -49,6 +49,44 @@ def _source_tokens(result: SearchResult) -> set[str]:
     return set(tokenize(result.chunk.text)) | set(tokenize(section))
 
 
+def _split_claim_segments(text: str) -> list[str]:
+    segments: list[str] = []
+    prose_lines: list[str] = []
+    fence_lines: list[str] = []
+    in_fence = False
+
+    def flush_prose() -> None:
+        joined = "\n".join(prose_lines).strip()
+        prose_lines.clear()
+        if not joined:
+            return
+        for part in _SEGMENT_SPLIT.split(joined):
+            cleaned = part.strip()
+            if cleaned:
+                segments.append(cleaned)
+
+    for line in text.splitlines():
+        if line.lstrip().startswith("```"):
+            if in_fence:
+                fence_lines.append(line)
+                segments.append("\n".join(fence_lines).strip())
+                fence_lines.clear()
+                in_fence = False
+            else:
+                flush_prose()
+                fence_lines.append(line)
+                in_fence = True
+        elif in_fence:
+            fence_lines.append(line)
+        else:
+            prose_lines.append(line)
+
+    if fence_lines:
+        segments.append("\n".join(fence_lines).strip())
+    flush_prose()
+    return segments
+
+
 def verify_answer(
     answer_text: str,
     sources: Sequence[SearchResult],
@@ -57,13 +95,19 @@ def verify_answer(
 ) -> GroundingReport:
     stripped = answer_text.strip()
     lowered = stripped.lower()
+    cited_indices = _unique_ints(_CITATION_PATTERN.findall(stripped))
+    invalid_citations = tuple(index for index in cited_indices if index < 1 or index > len(sources))
+    segments = _split_claim_segments(stripped) if stripped else []
+
     abstained = (
         not stripped
         or stripped == NO_ANSWER
-        or any(phrase in lowered for phrase in _ABSTENTION_PHRASES)
+        or (
+            not cited_indices
+            and len(segments) <= 1
+            and any(phrase in lowered for phrase in _ABSTENTION_PHRASES)
+        )
     )
-    cited_indices = _unique_ints(_CITATION_PATTERN.findall(stripped))
-    invalid_citations = tuple(index for index in cited_indices if index < 1 or index > len(sources))
 
     if abstained and not invalid_citations:
         return GroundingReport(
@@ -77,12 +121,6 @@ def verify_answer(
 
     source_term_sets = [_source_tokens(source) for source in sources]
     all_source_terms = set().union(*source_term_sets) if source_term_sets else set()
-
-    segments = [
-        match.group(0).strip()
-        for match in _CLAIM_SEGMENT_PATTERN.finditer(stripped)
-        if match.group(0).strip()
-    ]
 
     grounded_count = 0
     total_count = 0
@@ -109,7 +147,7 @@ def verify_answer(
 
     ratio = grounded_count / total_count if total_count else 0.0
     return GroundingReport(
-        abstained=abstained,
+        abstained=False,
         cited_indices=cited_indices,
         invalid_citations=invalid_citations,
         grounded_sentences=grounded_count,

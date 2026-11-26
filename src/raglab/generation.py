@@ -34,6 +34,43 @@ class Generator(ABC):
         raise NotImplementedError
 
 
+def _candidate_units(text: str) -> list[str]:
+    units: list[str] = []
+    prose_lines: list[str] = []
+    fence_lines: list[str] = []
+    in_fence = False
+
+    def flush_prose() -> None:
+        prose = "\n".join(prose_lines).strip()
+        prose_lines.clear()
+        if not prose:
+            return
+        for sentence in split_sentences(prose):
+            if not sentence.startswith("#"):
+                units.append(sentence)
+
+    for line in text.splitlines():
+        if line.lstrip().startswith("```"):
+            if in_fence:
+                fence_lines.append(line)
+                units.append("\n".join(fence_lines))
+                fence_lines.clear()
+                in_fence = False
+            else:
+                flush_prose()
+                fence_lines.append(line)
+                in_fence = True
+        elif in_fence:
+            fence_lines.append(line)
+        else:
+            prose_lines.append(line)
+
+    if fence_lines:
+        units.append("\n".join(fence_lines))
+    flush_prose()
+    return units
+
+
 class ExtractiveGenerator(Generator):
     def __init__(
         self,
@@ -61,8 +98,8 @@ class ExtractiveGenerator(Generator):
         seen: set[str] = set()
         for source_number, result in enumerate(results, start=1):
             section_terms = set(tokenize(result.chunk.metadata.get("section", "")))
-            for position, sentence in enumerate(split_sentences(result.chunk.text)):
-                if sentence.startswith(("#", "```")) or sentence in seen:
+            for position, sentence in enumerate(_candidate_units(result.chunk.text)):
+                if sentence in seen:
                     continue
                 seen.add(sentence)
                 sentence_terms = set(tokenize(sentence))

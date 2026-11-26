@@ -221,6 +221,10 @@ def load_cases(path: str | Path) -> list[EvalCase]:
             sources = item["relevant_sources"]
         except KeyError as error:
             raise ValueError(f"Case {index} needs 'question' and 'relevant_sources'") from error
+        if not isinstance(question, str) or not question.strip():
+            raise ValueError(f"Case {index} 'question' must be a non empty string")
+        if not isinstance(sources, list) or not all(isinstance(src, str) for src in sources):
+            raise ValueError(f"Case {index} 'relevant_sources' must be a list of strings")
         category = str(item.get("category", "general"))
         answerable = bool(item.get("answerable", True))
         filters = _parse_filters(item.get("filters"), index)

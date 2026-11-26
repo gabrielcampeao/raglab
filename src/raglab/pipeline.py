@@ -108,7 +108,9 @@ class RAGPipeline:
             raise ValueError("The question must not be empty")
         if not self._chunks:
             raise RuntimeError("Ingest documents before asking questions")
-        limit = k or self.top_k
+        limit = self.top_k if k is None else k
+        if limit <= 0:
+            raise ValueError("k must be positive")
         uses_post_stage = self.reranker is not None or self.mmr_lambda is not None
         pool = max(limit, self.candidate_pool) if uses_post_stage else limit
 
@@ -150,6 +152,7 @@ class RAGPipeline:
         *,
         filters: MetadataFilter | None = None,
     ) -> Answer:
+        ask_start = time.perf_counter()
         selected, retrieval_ms, rerank_ms, raw_count = self._select_candidates(
             question, k, filters=filters
         )
@@ -163,11 +166,12 @@ class RAGPipeline:
         generation_ms = (time.perf_counter() - start_generation) * 1000.0
 
         grounding = verify_answer(text, selected)
+        total_ms = (time.perf_counter() - ask_start) * 1000.0
         trace = PipelineTrace(
             retrieval_ms=retrieval_ms,
             rerank_ms=rerank_ms,
             generation_ms=generation_ms,
-            total_ms=retrieval_ms + rerank_ms + generation_ms,
+            total_ms=total_ms,
             candidates_retrieved=raw_count,
             candidates_selected=len(selected),
             context_tokens=context_tokens,

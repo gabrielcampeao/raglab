@@ -149,3 +149,17 @@ def test_chunk_markdown_documents_populates_section_metadata() -> None:
         "section": "Pool saturation > Mitigation",
     }
     assert "Switch PgBouncer to transaction mode." in chunks[0].text
+
+
+def test_chunk_markdown_rewraps_fences_when_splitting_oversized_code_blocks() -> None:
+    lines = "\n".join(f"  SELECT col_{index} FROM ledger;" for index in range(10))
+    markdown = f"# Runbook\n```sql\n{lines}\n```"
+
+    pairs = chunk_markdown(markdown, max_chars=110, overlap=0)
+
+    assert len(pairs) > 1
+    for _, text in pairs:
+        assert text.startswith("```sql\n")
+        assert text.endswith("\n```")
+        assert "  SELECT " in text
+        assert len(text) <= 110

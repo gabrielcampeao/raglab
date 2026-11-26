@@ -23,9 +23,9 @@ Toy RAG examples usually stop at half a dozen short FAQ paragraphs where any ret
 
 `build_incident_copilot()` in [copilot.py](copilot.py) assembles the full two stage `raglab` stack:
 
-* **Ingestion:** `markdown_aware=True` (`max_chars=360`, `overlap=1`), tracking ATX heading breadcrumbs in `metadata["section"]` and keeping fenced SQL blocks intact.
+* **Ingestion:** `markdown_aware=True` (`max_chars=340`, `overlap=1`), tracking ATX heading breadcrumbs in `metadata["section"]`, loading `corpus/metadata.json` facets (`kind`, `service`), and keeping fenced SQL blocks intact.
 * **First stage retrieval:** `HybridRetriever` fusing `HashingEmbedder` dense cosine similarity and `BM25Retriever` via Reciprocal Rank Fusion over a candidate pool of 16 chunks, with metadata prefiltering (`kind`, `service`).
-* **Second stage reranking and diversity:** `CrossTermReranker` scoring query term coverage, ordered bigram proximity, and section heading overlap, followed by `diversify_mmr(lambda_weight=0.75)` to drop redundant sibling chunks.
+* **Second stage reranking and diversity:** `CrossTermReranker` scoring query term coverage, ordered bigram proximity, and section heading overlap, followed by `diversify_mmr(lambda_weight=0.65)` to drop redundant sibling chunks.
 * **Budgeting and verification:** `pack_context(max_tokens=260)` bounds prompt size, `ExtractiveGenerator(min_shared_terms=2, min_overlap_ratio=0.34)` refuses weak coincidences, and `verify_answer` checks citation bounds and lexical support on every claim sentence.
 
 ## Running the autonomous playbook and benchmark
@@ -39,5 +39,6 @@ Or query the corpus directly through the `raglab` CLI with metadata filters and 
 ```bash
 raglab ask "Workers emit SQLSTATE 53300. What is the immediate mitigation?" \
   --data projects/incident_copilot/corpus \
-  --markdown --rerank --mmr 0.75 --max-tokens 260 --show-trace
+  --filter kind=runbook --filter service=postgres \
+  --markdown --rerank --mmr 0.65 --max-tokens 260 --show-trace
 ```

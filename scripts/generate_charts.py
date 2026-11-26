@@ -368,7 +368,7 @@ def render_chunk_sweep_svg(sweep: list[dict[str, float | int]]) -> str:
         _text(
             36,
             64,
-            "Sweep from 140 to 1400 max characters per chunk (overlap = 1, top k = 3)",
+            "Flat sentence chunking sweep from 140 to 1400 max characters (overlap = 1, top k = 3)",
             fill="#94a3b8",
             size=13,
         )
@@ -488,10 +488,13 @@ def render_latency_quality_svg(ablation: dict[str, Any]) -> str:
     left, top, bottom, right = 88, 108, 376, 900
     plot_w, plot_h = right - left, bottom - top
     max_ms = max(max(float(configs[k]["mean_latency_ms"]) for k, _, _ in items) * 1.25, 10.0)
+    min_ver = min(float(configs[k]["verified_rate"]) for k, _, _ in items)
+    y_floor = min(0.60, max(0.0, int(min_ver * 10) / 10))
+    y_span = 1.05 - y_floor
 
     for step in range(5):
-        y_val = 0.60 + step * 0.10
-        y = bottom - ((y_val - 0.60) / 0.45) * plot_h
+        y_val = y_floor + step * ((1.0 - y_floor) / 4)
+        y = bottom - ((y_val - y_floor) / y_span) * plot_h
         out.append(
             f'<line x1="{left}" y1="{y:.1f}" x2="{right}" y2="{y:.1f}" '
             'stroke="#1e293b" stroke-width="1.2"/>'
@@ -532,7 +535,7 @@ def render_latency_quality_svg(ablation: dict[str, Any]) -> str:
         ver = float(configs[key]["verified_rate"])
         ndcg = float(configs[key]["ndcg_at_3"])
         cx = left + (ms / max_ms) * plot_w
-        cy = bottom - ((ver - 0.60) / 0.45) * plot_h
+        cy = bottom - ((ver - y_floor) / y_span) * plot_h
         dx, dy = offsets[key]
         anchor = "start" if dx > 0 else "end"
         out.append(
