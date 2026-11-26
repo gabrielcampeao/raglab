@@ -255,6 +255,91 @@ def render_architecture_svg() -> str:
     return "\n".join(out) + "\n"
 
 
+def render_ecosystem_svg() -> str:
+    width, height = 980, 480
+    out = _svg_header(width, height, "Production RAG ecosystem and pluggable adapters")
+    out.append(
+        _text(
+            36,
+            42,
+            "Production RAG ecosystem and raglab integration architecture",
+            size=20,
+            weight="700",
+        )
+    )
+    subtitle = (
+        "Swap each stage from zero dependency local engines to distributed "
+        "vector databases, neural embedders, and cross encoders"
+    )
+    out.append(_text(36, 64, subtitle, fill="#94a3b8", size=13))
+
+    columns = [
+        (
+            "VECTOR DATABASES",
+            "#38bdf8",
+            (
+                ("Qdrant (Built in)", ("Rust HNSW + payload filter", "indexes & quantization")),
+                ("pgvector (Built in)", ("PostgreSQL 16 ACID joins,", "HNSW + GIN JSONB")),
+                ("Chroma (Built in)", ("Embedded HNSW store", "and HTTP collections")),
+                ("Milvus / FAISS", ("Billion scale shards or", "in process C++ IVFPQ")),
+            ),
+        ),
+        (
+            "EMBEDDING MODELS",
+            "#818cf8",
+            (
+                ("OpenAI (Built in)", ("text embedding 3 with", "Matryoshka dimensions")),
+                ("Ollama (Built in)", ("Local nomic embed text", "and mxbai embed large")),
+                ("BGE M3 / FastEmbed", ("Dense + sparse + ColBERT", "quantized ONNX runtime")),
+                ("Hashing / TFIDF", ("Deterministic stdlib", "vectors in raglab core")),
+            ),
+        ),
+        (
+            "SECOND STAGE RERANK",
+            "#f59e0b",
+            (
+                (
+                    "Cohere Rerank (Built in)",
+                    ("Cross encoder scoring via", "Cohere v2 / TEI / vLLM"),
+                ),
+                ("CrossTermReranker", ("Term coverage, phrase", "span, and section boost")),
+                ("MMR Diversification", ("Jaccard redundancy", "suppression across top k")),
+                ("ColBERT MaxSim", ("Late interaction token", "matrix scoring")),
+            ),
+        ),
+        (
+            "SERVING & GUARDRAILS",
+            "#34d399",
+            (
+                ("OpenAI / vLLM / Ollama", ("Chat completions over", "stdlib HTTP transport")),
+                ("Grounding Verifier", ("Checks [n] bounds, claim", "support, trap abstention")),
+                ("PipelineTrace", ("Per stage latency and", "context token telemetry")),
+                ("OpenTelemetry / RAGAS", ("Production trace export", "and regression gates")),
+            ),
+        ),
+    ]
+
+    col_w = 216
+    col_gap = 18
+    start_x = 31
+
+    for c_idx, (heading, accent, cards) in enumerate(columns):
+        cx = start_x + c_idx * (col_w + col_gap)
+        out.append(
+            f'<rect x="{cx}" y="86" width="{col_w}" height="370" rx="12" '
+            'fill="#0f172a" stroke="#334155" stroke-width="1.2"/>'
+        )
+        out.append(
+            _text(cx + 14, 110, heading, fill=accent, size=11.5, weight="700", spacing="0.7")
+        )
+        for r_idx, (title, lines) in enumerate(cards):
+            cy = 124 + r_idx * 80
+            out.append(_card(cx + 12, cy, col_w - 24, 70, accent, title, lines))
+
+    out.append("</svg>")
+    return "\n".join(out) + "\n"
+
+
 def render_ablation_svg(ablation: dict[str, Any]) -> str:
     width, height = 960, 470
     configs = ablation["configurations"]
@@ -563,6 +648,7 @@ def generate_all(root: Path | None = None) -> dict[str, Any]:
     assets = base / "docs" / "assets"
     assets.mkdir(parents=True, exist_ok=True)
     (assets / "architecture_overview.svg").write_text(render_architecture_svg(), encoding="utf-8")
+    (assets / "ecosystem_tooling_map.svg").write_text(render_ecosystem_svg(), encoding="utf-8")
     (assets / "retrieval_ablation.svg").write_text(render_ablation_svg(ablation), encoding="utf-8")
     (assets / "chunk_size_tradeoff.svg").write_text(render_chunk_sweep_svg(sweep), encoding="utf-8")
     (assets / "latency_vs_quality.svg").write_text(

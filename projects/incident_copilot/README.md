@@ -34,11 +34,12 @@ Toy RAG examples usually stop at half a dozen short FAQ paragraphs where any ret
 python projects/incident_copilot/run_playbook.py
 ```
 
-Or query the corpus directly through the `raglab` CLI with metadata filters and execution traces:
+Or query the corpus directly through the `raglab` CLI using the **Qdrant** vector backend, metadata filters, and execution traces:
 
 ```bash
 raglab ask "Workers emit SQLSTATE 53300. What is the immediate mitigation?" \
   --data projects/incident_copilot/corpus \
+  --backend qdrant \
   --filter kind=runbook --filter service=postgres \
   --markdown --rerank --mmr 0.65 --max-tokens 260 --show-trace
 ```

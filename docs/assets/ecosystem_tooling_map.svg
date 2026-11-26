@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 480" width="980" height="480" role="img" aria-label="Production RAG ecosystem and pluggable adapters">
+<defs>
+<linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#0b1120"/>
+<stop offset="100%" stop-color="#111827"/>
+</linearGradient>
+<marker id="arrowCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8"/>
+</marker>
+<marker id="arrowEmerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M 0 1 L 9 5 L 0 9 z" fill="#34d399"/>
+</marker>
+</defs>
+<rect width="980" height="480" rx="16" fill="url(#bgGrad)"/>
+<rect x="1" y="1" width="978" height="478" rx="15" fill="none" stroke="#1e293b" stroke-width="2"/>
+<text x="36.0" y="42.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="20" font-weight="700">Production RAG ecosystem and raglab integration architecture</text>
+<text x="36.0" y="64.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="400">Swap each stage from zero dependency local engines to distributed vector databases, neural embedders, and cross encoders</text>
+<rect x="31" y="86" width="216" height="370" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1.2"/>
+<text x="45.0" y="110.0" text-anchor="start" fill="#38bdf8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="700" letter-spacing="0.7">VECTOR DATABASES</text>
+<rect x="43" y="124" width="192" height="70" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="1.6"/>
+<text x="57.0" y="150.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">Qdrant (Built in)</text>
+<text x="57.0" y="170.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Rust HNSW + payload filter</text>
+<text x="57.0" y="187.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">indexes &amp; quantization</text>
+<rect x="43" y="204" width="192" height="70" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="1.6"/>
+<text x="57.0" y="230.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">pgvector (Built in)</text>
+<text x="57.0" y="250.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">PostgreSQL 16 ACID joins,</text>
+<text x="57.0" y="267.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">HNSW + GIN JSONB</text>
+<rect x="43" y="284" width="192" height="70" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="1.6"/>
+<text x="57.0" y="310.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">Chroma (Built in)</text>
+<text x="57.0" y="330.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Embedded HNSW store</text>
+<text x="57.0" y="347.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">and HTTP collections</text>
+<rect x="43" y="364" width="192" height="70" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="1.6"/>
+<text x="57.0" y="390.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">Milvus / FAISS</text>
+<text x="57.0" y="410.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Billion scale shards or</text>
+<text x="57.0" y="427.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">in process C++ IVFPQ</text>
+<rect x="265" y="86" width="216" height="370" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1.2"/>
+<text x="279.0" y="110.0" text-anchor="start" fill="#818cf8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="700" letter-spacing="0.7">EMBEDDING MODELS</text>
+<rect x="277" y="124" width="192" height="70" rx="10" fill="#1e293b" stroke="#818cf8" stroke-width="1.6"/>
+<text x="291.0" y="150.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">OpenAI (Built in)</text>
+<text x="291.0" y="170.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">text embedding 3 with</text>
+<text x="291.0" y="187.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Matryoshka dimensions</text>
+<rect x="277" y="204" width="192" height="70" rx="10" fill="#1e293b" stroke="#818cf8" stroke-width="1.6"/>
+<text x="291.0" y="230.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">Ollama (Built in)</text>
+<text x="291.0" y="250.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Local nomic embed text</text>
+<text x="291.0" y="267.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">and mxbai embed large</text>
+<rect x="277" y="284" width="192" height="70" rx="10" fill="#1e293b" stroke="#818cf8" stroke-width="1.6"/>
+<text x="291.0" y="310.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">BGE M3 / FastEmbed</text>
+<text x="291.0" y="330.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Dense + sparse + ColBERT</text>
+<text x="291.0" y="347.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">quantized ONNX runtime</text>
+<rect x="277" y="364" width="192" height="70" rx="10" fill="#1e293b" stroke="#818cf8" stroke-width="1.6"/>
+<text x="291.0" y="390.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">Hashing / TFIDF</text>
+<text x="291.0" y="410.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Deterministic stdlib</text>
+<text x="291.0" y="427.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">vectors in raglab core</text>
+<rect x="499" y="86" width="216" height="370" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1.2"/>
+<text x="513.0" y="110.0" text-anchor="start" fill="#f59e0b" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="700" letter-spacing="0.7">SECOND STAGE RERANK</text>
+<rect x="511" y="124" width="192" height="70" rx="10" fill="#1e293b" stroke="#f59e0b" stroke-width="1.6"/>
+<text x="525.0" y="150.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">Cohere Rerank (Built in)</text>
+<text x="525.0" y="170.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Cross encoder scoring via</text>
+<text x="525.0" y="187.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Cohere v2 / TEI / vLLM</text>
+<rect x="511" y="204" width="192" height="70" rx="10" fill="#1e293b" stroke="#f59e0b" stroke-width="1.6"/>
+<text x="525.0" y="230.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">CrossTermReranker</text>
+<text x="525.0" y="250.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Term coverage, phrase</text>
+<text x="525.0" y="267.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">span, and section boost</text>
+<rect x="511" y="284" width="192" height="70" rx="10" fill="#1e293b" stroke="#f59e0b" stroke-width="1.6"/>
+<text x="525.0" y="310.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">MMR Diversification</text>
+<text x="525.0" y="330.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Jaccard redundancy</text>
+<text x="525.0" y="347.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">suppression across top k</text>
+<rect x="511" y="364" width="192" height="70" rx="10" fill="#1e293b" stroke="#f59e0b" stroke-width="1.6"/>
+<text x="525.0" y="390.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">ColBERT MaxSim</text>
+<text x="525.0" y="410.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Late interaction token</text>
+<text x="525.0" y="427.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">matrix scoring</text>
+<rect x="733" y="86" width="216" height="370" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1.2"/>
+<text x="747.0" y="110.0" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="700" letter-spacing="0.7">SERVING &amp; GUARDRAILS</text>
+<rect x="745" y="124" width="192" height="70" rx="10" fill="#1e293b" stroke="#34d399" stroke-width="1.6"/>
+<text x="759.0" y="150.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">OpenAI / vLLM / Ollama</text>
+<text x="759.0" y="170.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Chat completions over</text>
+<text x="759.0" y="187.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">stdlib HTTP transport</text>
+<rect x="745" y="204" width="192" height="70" rx="10" fill="#1e293b" stroke="#34d399" stroke-width="1.6"/>
+<text x="759.0" y="230.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">Grounding Verifier</text>
+<text x="759.0" y="250.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Checks [n] bounds, claim</text>
+<text x="759.0" y="267.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">support, trap abstention</text>
+<rect x="745" y="284" width="192" height="70" rx="10" fill="#1e293b" stroke="#34d399" stroke-width="1.6"/>
+<text x="759.0" y="310.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">PipelineTrace</text>
+<text x="759.0" y="330.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Per stage latency and</text>
+<text x="759.0" y="347.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">context token telemetry</text>
+<rect x="745" y="364" width="192" height="70" rx="10" fill="#1e293b" stroke="#34d399" stroke-width="1.6"/>
+<text x="759.0" y="390.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">OpenTelemetry / RAGAS</text>
+<text x="759.0" y="410.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Production trace export</text>
+<text x="759.0" y="427.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">and regression gates</text>
+</svg>

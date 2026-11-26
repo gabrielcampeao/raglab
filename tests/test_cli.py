@@ -161,10 +161,13 @@ def test_cli_evaluate_on_incident_copilot_reproduces_scoped_triage_hits(
 
 def test_cli_ask_runs_against_qdrant_backend(capsys: pytest.CaptureFixture[str]) -> None:
     corpus = Path(__file__).resolve().parents[1] / "projects" / "incident_copilot" / "corpus"
+    question = (
+        "Workers emit SQLSTATE 53300 on Postgres connections. What is the immediate mitigation?"
+    )
     code = main(
         [
             "ask",
-            "Workers emit SQLSTATE 53300 on Postgres connections. What is the immediate mitigation?",
+            question,
             "--data",
             str(corpus),
             "--backend",
