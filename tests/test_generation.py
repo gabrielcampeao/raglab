@@ -154,3 +154,21 @@ def test_extractive_generator_clamps_min_shared_terms_for_single_token_queries()
     answer = generator.generate("What is PgBouncer?", "", results)
 
     assert answer == "PgBouncer pools connections in transaction mode. [1]"
+
+
+def test_extractive_generator_accepts_three_direct_term_matches_on_long_questions() -> None:
+    results = [
+        _result(
+            "postmortem.md",
+            "Mobile clients retried timed out payment calls during regional packet loss.",
+        )
+    ]
+    generator = ExtractiveGenerator(min_shared_terms=2, min_overlap_ratio=0.34)
+
+    answer = generator.generate(
+        "Why were mobile shoppers charged twice when retrying timed out card requests in April?",
+        "",
+        results,
+    )
+
+    assert "Mobile clients retried timed out payment calls" in answer

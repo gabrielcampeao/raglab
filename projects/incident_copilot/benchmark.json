@@ -1,0 +1,160 @@
+[
+  {
+    "question": "Workers emit SQLSTATE 53300 on Postgres connections. What is the immediate PgBouncer mitigation?",
+    "relevant_sources": ["runbooks/postgres_pool_saturation.md"],
+    "category": "exact_signal",
+    "answerable": true
+  },
+  {
+    "question": "Pods in payments_prod restart with OOMKilled and exit code 137. How do we stabilize memory?",
+    "relevant_sources": ["runbooks/kubernetes_oomkilled.md"],
+    "category": "exact_signal",
+    "answerable": true
+  },
+  {
+    "question": "How should we tune max.poll.records and max.poll.interval.ms during settlement_projector rebalance storms?",
+    "relevant_sources": ["runbooks/kafka_consumer_lag.md"],
+    "category": "exact_signal",
+    "answerable": true
+  },
+  {
+    "question": "What burn rate threshold pages Sev1 immediately on checkout availability?",
+    "relevant_sources": ["architecture/slo_and_burn_rates.md"],
+    "category": "exact_signal",
+    "answerable": true
+  },
+  {
+    "question": "How must new Postgres indexes and foreign key constraints be added without locking checkout tables?",
+    "relevant_sources": ["architecture/zero_downtime_migrations.md"],
+    "category": "exact_signal",
+    "answerable": true
+  },
+  {
+    "question": "What HTTP status is returned when an Idempotency_Key is replayed with a modified payload hash?",
+    "relevant_sources": ["architecture/idempotency_and_ledger.md"],
+    "category": "exact_signal",
+    "answerable": true
+  },
+  {
+    "question": "Database CPU spikes to 95 percent whenever a popular cached merchant key expires. How do we stop the stampede?",
+    "relevant_sources": ["runbooks/redis_cache_stampede.md"],
+    "category": "paraphrase",
+    "answerable": true
+  },
+  {
+    "question": "Why were mobile shoppers charged twice when retrying timed out card payments in April?",
+    "relevant_sources": ["postmortems/checkout_double_charge_2026_04.md"],
+    "category": "paraphrase",
+    "answerable": true
+  },
+  {
+    "question": "Why did API workers keep sending writes to the demoted Frankfurt database node after failover?",
+    "relevant_sources": ["postmortems/eu_region_failover_2026_07.md"],
+    "category": "paraphrase",
+    "answerable": true
+  },
+  {
+    "question": "What caused legitimate shoppers to receive HTTP 429 rate limit errors after the September CDN change?",
+    "relevant_sources": ["postmortems/rate_limiter_false_positives_2026_09.md"],
+    "category": "paraphrase",
+    "answerable": true
+  },
+  {
+    "question": "One degraded merchant endpoint is delaying outbound webhook notifications for everyone else. How do we isolate it?",
+    "relevant_sources": ["runbooks/payment_webhook_backlog.md"],
+    "category": "paraphrase",
+    "answerable": true
+  },
+  {
+    "question": "When do we escalate Postgres CPU or SSL handshake churn to the database reliability lead?",
+    "relevant_sources": ["runbooks/postgres_pool_saturation.md"],
+    "category": "paraphrase",
+    "answerable": true
+  },
+  {
+    "question": "Which postmortem and architecture documents cover duplicate card captures, fencing tokens, and 24 hour idempotency retention?",
+    "relevant_sources": [
+      "postmortems/checkout_double_charge_2026_04.md",
+      "architecture/idempotency_and_ledger.md"
+    ],
+    "category": "multi_doc",
+    "answerable": true
+  },
+  {
+    "question": "How do PgBouncer transaction pooling and PgBouncer sidecar DNS resolution protect Postgres availability?",
+    "relevant_sources": [
+      "runbooks/postgres_pool_saturation.md",
+      "postmortems/eu_region_failover_2026_07.md"
+    ],
+    "category": "multi_doc",
+    "answerable": true
+  },
+  {
+    "question": "How do Envoy SDS hot reload and Envoy CDN hop validation protect edge traffic?",
+    "relevant_sources": [
+      "runbooks/tls_certificate_rotation.md",
+      "postmortems/rate_limiter_false_positives_2026_09.md"
+    ],
+    "category": "multi_doc",
+    "answerable": true
+  },
+  {
+    "question": "What postmortem corrective action fixed stale Postgres traffic after failover?",
+    "relevant_sources": ["postmortems/eu_region_failover_2026_07.md"],
+    "category": "scoped_triage",
+    "answerable": true,
+    "filters": {"kind": "postmortem", "service": "postgres"}
+  },
+  {
+    "question": "What runbook mitigation applies to Postgres connection saturation?",
+    "relevant_sources": ["runbooks/postgres_pool_saturation.md"],
+    "category": "scoped_triage",
+    "answerable": true,
+    "filters": {"kind": "runbook", "service": "postgres"}
+  },
+  {
+    "question": "What postmortem root cause triggered duplicate card charges during retries?",
+    "relevant_sources": ["postmortems/checkout_double_charge_2026_04.md"],
+    "category": "scoped_triage",
+    "answerable": true,
+    "filters": {"kind": "postmortem", "service": "ledger"}
+  },
+  {
+    "question": "What Postgres schema migration policy avoids table locks?",
+    "relevant_sources": ["architecture/zero_downtime_migrations.md"],
+    "category": "scoped_triage",
+    "answerable": true,
+    "filters": {"kind": "architecture", "service": "postgres"}
+  },
+  {
+    "question": "What edge postmortem explains client IP bucket collapse?",
+    "relevant_sources": ["postmortems/rate_limiter_false_positives_2026_09.md"],
+    "category": "scoped_triage",
+    "answerable": true,
+    "filters": {"kind": "postmortem", "service": "edge"}
+  },
+  {
+    "question": "What is the query timeout configured on our GraphQL federation gateway?",
+    "relevant_sources": [],
+    "category": "unanswerable",
+    "answerable": false
+  },
+  {
+    "question": "How do we provision NVIDIA H100 GPU nodes for fraud model training?",
+    "relevant_sources": [],
+    "category": "unanswerable",
+    "answerable": false
+  },
+  {
+    "question": "Which telecom vendor delivers SMS one time passcodes in Brazil?",
+    "relevant_sources": [],
+    "category": "unanswerable",
+    "answerable": false
+  },
+  {
+    "question": "What is the retention policy for Snowflake cold archive tables?",
+    "relevant_sources": [],
+    "category": "unanswerable",
+    "answerable": false
+  }
+]

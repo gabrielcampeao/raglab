@@ -71,7 +71,10 @@ class ExtractiveGenerator(Generator):
                     continue
                 effective_overlap = len(query_terms & (sentence_terms | section_terms))
                 coverage = effective_overlap / len(query_terms)
-                if effective_overlap >= required_terms and coverage >= self.min_overlap_ratio:
+                strong_direct = direct_overlap >= max(3, self.min_shared_terms)
+                if effective_overlap >= required_terms and (
+                    coverage >= self.min_overlap_ratio or strong_direct
+                ):
                     candidates.append((direct_overlap, source_number, position, sentence))
         if not candidates:
             return NO_ANSWER
