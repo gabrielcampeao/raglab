@@ -126,7 +126,7 @@ def build_incident_copilot(
         generator=ExtractiveGenerator(
             max_sentences=2,
             min_shared_terms=2,
-            min_overlap_ratio=0.25,
+            min_overlap_ratio=0.34,
         ),
         reranker=CrossTermReranker(),
         candidate_pool=16,
@@ -204,7 +204,7 @@ def _build_ablation_pipelines(documents: list[Document]) -> dict[str, RAGPipelin
                 generator=ExtractiveGenerator(
                     max_sentences=2,
                     min_shared_terms=2,
-                    min_overlap_ratio=0.25,
+                    min_overlap_ratio=0.34,
                 ),
                 reranker=CrossTermReranker(),
                 candidate_pool=16,
@@ -273,7 +273,7 @@ def run_chunk_sweep(
             generator=ExtractiveGenerator(
                 max_sentences=2,
                 min_shared_terms=2,
-                min_overlap_ratio=0.25,
+                min_overlap_ratio=0.34,
             ),
             reranker=CrossTermReranker(),
             candidate_pool=16,
