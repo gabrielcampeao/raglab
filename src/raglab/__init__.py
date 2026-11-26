@@ -25,8 +25,10 @@ from raglab.retrievers import (
     BM25Retriever,
     DenseRetriever,
     HybridRetriever,
+    MetadataFilter,
     Retriever,
     create_retriever,
+    matches_filters,
 )
 from raglab.vectorstore import InMemoryVectorStore
 
@@ -50,6 +52,7 @@ __all__ = [
     "HybridRetriever",
     "InMemoryVectorStore",
     "MarkdownSection",
+    "MetadataFilter",
     "OpenAICompatibleGenerator",
     "RAGPipeline",
     "RetrievalReport",
@@ -67,6 +70,7 @@ __all__ = [
     "format_context",
     "load_cases",
     "load_directory",
+    "matches_filters",
     "split_markdown_sections",
     "split_sentences",
 ]

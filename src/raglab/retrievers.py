@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from abc import ABC, abstractmethod
 from collections import Counter
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 
 from raglab.embeddings import Embedder, HashingEmbedder, TfidfEmbedder
 from raglab.models import Chunk, SearchResult
@@ -11,6 +11,8 @@ from raglab.text import tokenize
 from raglab.vectorstore import InMemoryVectorStore
 
 RETRIEVER_NAMES = ("dense", "tfidf", "bm25", "hybrid")
+
+MetadataFilter = Mapping[str, str]
 
 
 def _check_k(k: int) -> None:
@@ -23,13 +25,26 @@ def _rank(results: list[SearchResult], k: int) -> list[SearchResult]:
     return results[:k]
 
 
+def _searchable_text(chunk: Chunk) -> str:
+    section = chunk.metadata.get("section", "")
+    return f"{section}\n{chunk.text}" if section else chunk.text
+
+
+def matches_filters(chunk: Chunk, filters: MetadataFilter | None) -> bool:
+    if not filters:
+        return True
+    return all(chunk.metadata.get(key) == value for key, value in filters.items())
+
+
 class Retriever(ABC):
     @abstractmethod
     def index(self, chunks: Iterable[Chunk]) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def retrieve(self, query: str, k: int = 3) -> list[SearchResult]:
+    def retrieve(
+        self, query: str, k: int = 3, *, filters: MetadataFilter | None = None
+    ) -> list[SearchResult]:
         raise NotImplementedError
 
 
@@ -47,18 +62,26 @@ class DenseRetriever(Retriever):
 
     def index(self, chunks: Iterable[Chunk]) -> None:
         chunk_list = list(chunks)
-        texts = [chunk.text for chunk in chunk_list]
+        texts = [_searchable_text(chunk) for chunk in chunk_list]
         self.embedder.fit(texts)
         self.store.clear()
         if chunk_list:
             self.store.add(chunk_list, self.embedder.embed(texts))
 
-    def retrieve(self, query: str, k: int = 3) -> list[SearchResult]:
+    def retrieve(
+        self, query: str, k: int = 3, *, filters: MetadataFilter | None = None
+    ) -> list[SearchResult]:
         _check_k(k)
         if len(self.store) == 0:
             return []
-        results = self.store.search(self.embedder.embed_query(query), k)
-        return [result for result in results if result.score > self.min_score]
+        limit = len(self.store) if filters else k
+        results = self.store.search(self.embedder.embed_query(query), limit)
+        filtered = [
+            result
+            for result in results
+            if result.score > self.min_score and matches_filters(result.chunk, filters)
+        ]
+        return filtered[:k]
 
 
 class BM25Retriever(Retriever):
@@ -77,7 +100,9 @@ class BM25Retriever(Retriever):
 
     def index(self, chunks: Iterable[Chunk]) -> None:
         self._chunks = list(chunks)
-        self._term_frequencies = [Counter(tokenize(chunk.text)) for chunk in self._chunks]
+        self._term_frequencies = [
+            Counter(tokenize(_searchable_text(chunk))) for chunk in self._chunks
+        ]
         self._lengths = [sum(frequencies.values()) for frequencies in self._term_frequencies]
         total = len(self._chunks)
         self._average_length = sum(self._lengths) / total if total else 0.0
@@ -90,9 +115,9 @@ class BM25Retriever(Retriever):
         }
 
     def score(self, query_terms: Sequence[str], position: int) -> float:
-        frequencies = self._term_frequencies[position]
         if self._average_length == 0:
             return 0.0
+        frequencies = self._term_frequencies[position]
         length_ratio = self._lengths[position] / self._average_length
         total = 0.0
         for term in query_terms:
@@ -103,11 +128,15 @@ class BM25Retriever(Retriever):
             total += self._idf[term] * frequency * (self.k1 + 1) / saturation
         return total
 
-    def retrieve(self, query: str, k: int = 3) -> list[SearchResult]:
+    def retrieve(
+        self, query: str, k: int = 3, *, filters: MetadataFilter | None = None
+    ) -> list[SearchResult]:
         _check_k(k)
         terms = tokenize(query)
         results: list[SearchResult] = []
         for position, chunk in enumerate(self._chunks):
+            if not matches_filters(chunk, filters):
+                continue
             value = self.score(terms, position)
             if value > 0:
                 results.append(SearchResult(chunk=chunk, score=value))
@@ -137,13 +166,20 @@ class HybridRetriever(Retriever):
         for retriever in self.retrievers:
             retriever.index(chunk_list)
 
-    def retrieve(self, query: str, k: int = 3) -> list[SearchResult]:
+    def retrieve(
+        self, query: str, k: int = 3, *, filters: MetadataFilter | None = None
+    ) -> list[SearchResult]:
         _check_k(k)
         pool = max(k, self.candidate_pool)
         fused: dict[str, float] = {}
         chunks: dict[str, Chunk] = {}
         for retriever in self.retrievers:
-            for rank, result in enumerate(retriever.retrieve(query, pool), start=1):
+            candidates = (
+                retriever.retrieve(query, pool, filters=filters)
+                if filters is not None
+                else retriever.retrieve(query, pool)
+            )
+            for rank, result in enumerate(candidates, start=1):
                 chunk_id = result.chunk.id
                 fused[chunk_id] = fused.get(chunk_id, 0.0) + 1.0 / (self.rrf_k + rank)
                 chunks[chunk_id] = result.chunk

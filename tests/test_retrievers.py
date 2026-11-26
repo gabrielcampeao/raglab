@@ -22,7 +22,9 @@ class StaticRetriever(Retriever):
     def index(self, chunks: Iterable[Chunk]) -> None:
         self.indexed = list(chunks)
 
-    def retrieve(self, query: str, k: int = 3) -> list[SearchResult]:
+    def retrieve(
+        self, query: str, k: int = 3, *, filters: dict[str, str] | None = None
+    ) -> list[SearchResult]:
         by_id = {chunk.id: chunk for chunk in self.indexed}
         return [SearchResult(by_id[chunk_id], 1.0) for chunk_id in self.ranked_ids][:k]
 
@@ -125,3 +127,77 @@ def test_hybrid_retriever_indexes_every_inner_retriever(sample_chunks: list[Chun
 def test_hybrid_retriever_rejects_invalid_parameters(arguments: dict[str, int]) -> None:
     with pytest.raises(ValueError):
         HybridRetriever(**arguments)
+
+
+@pytest.mark.parametrize("name", RETRIEVER_NAMES)
+def test_every_retriever_prefilters_by_metadata(name: str) -> None:
+    chunks = [
+        Chunk(
+            id="pg_runbook#0",
+            text="Connection pool saturation triggers SQLSTATE 53300.",
+            document_id="pg_runbook",
+            position=0,
+            metadata={"source": "pg_runbook.md", "kind": "runbook", "service": "postgres"},
+        ),
+        Chunk(
+            id="pg_postmortem#0",
+            text="Connection pool saturation caused a 12 minute checkout outage.",
+            document_id="pg_postmortem",
+            position=0,
+            metadata={"source": "pg_postmortem.md", "kind": "postmortem", "service": "postgres"},
+        ),
+        Chunk(
+            id="redis_runbook#0",
+            text="Cache stampede saturates upstream connection pools.",
+            document_id="redis_runbook",
+            position=0,
+            metadata={"source": "redis_runbook.md", "kind": "runbook", "service": "redis"},
+        ),
+    ]
+    retriever = create_retriever(name)
+    retriever.index(chunks)
+
+    results = retriever.retrieve(
+        "connection pool saturation",
+        k=2,
+        filters={"kind": "postmortem", "service": "postgres"},
+    )
+
+    assert [result.chunk.id for result in results] == ["pg_postmortem#0"]
+
+
+@pytest.mark.parametrize("name", RETRIEVER_NAMES)
+def test_every_retriever_returns_empty_when_filters_match_nothing(
+    name: str, sample_chunks: list[Chunk]
+) -> None:
+    retriever = create_retriever(name)
+    retriever.index(sample_chunks)
+
+    assert retriever.retrieve("refund", k=2, filters={"kind": "nonexistent"}) == []
+
+
+@pytest.mark.parametrize("name", RETRIEVER_NAMES)
+def test_every_retriever_indexes_section_heading_metadata(name: str) -> None:
+    chunks = [
+        Chunk(
+            id="pg#0",
+            text="Switch pool_mode to transaction immediately.",
+            document_id="pg",
+            position=0,
+            metadata={"source": "pg.md", "section": "PgBouncer saturation > Emergency mitigation"},
+        ),
+        Chunk(
+            id="kafka#0",
+            text="Increase max.poll.interval.ms during batch backfills.",
+            document_id="kafka",
+            position=0,
+            metadata={"source": "kafka.md", "section": "Consumer lag > Rebalance tuning"},
+        ),
+    ]
+    retriever = create_retriever(name)
+    retriever.index(chunks)
+
+    results = retriever.retrieve("PgBouncer emergency mitigation", k=1)
+
+    assert len(results) == 1
+    assert results[0].chunk.id == "pg#0"
