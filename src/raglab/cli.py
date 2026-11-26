@@ -6,6 +6,7 @@ from collections.abc import Sequence
 
 from raglab import __version__
 from raglab.documents import load_directory
+from raglab.embeddings import HashingEmbedder
 from raglab.evaluation import evaluate_retrieval, load_cases
 from raglab.generation import (
     ExtractiveGenerator,
@@ -13,10 +14,18 @@ from raglab.generation import (
     Generator,
     OpenAICompatibleGenerator,
 )
+from raglab.integrations.qdrant import QdrantVectorStore
 from raglab.models import Document
 from raglab.pipeline import RAGPipeline
 from raglab.reranking import CrossTermReranker
-from raglab.retrievers import RETRIEVER_NAMES, create_retriever
+from raglab.retrievers import (
+    RETRIEVER_NAMES,
+    BM25Retriever,
+    DenseRetriever,
+    HybridRetriever,
+    Retriever,
+    create_retriever,
+)
 
 PREVIEW_LENGTH = 110
 
@@ -37,6 +46,17 @@ def _add_index_options(parser: argparse.ArgumentParser) -> None:
 
 def _add_ranking_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--retriever", choices=RETRIEVER_NAMES, default="hybrid")
+    parser.add_argument(
+        "--backend",
+        choices=("memory", "qdrant"),
+        default="memory",
+        help="vector store backend used by dense and hybrid retrievers",
+    )
+    parser.add_argument(
+        "--qdrant-url",
+        default=None,
+        help="Qdrant server URL such as http://localhost:6333 (defaults to in memory)",
+    )
     parser.add_argument(
         "--rerank",
         action="store_true",
@@ -140,6 +160,18 @@ def _build_generator(args: argparse.Namespace) -> Generator:
     return ExtractiveGenerator()
 
 
+def _select_retriever(name: str, args: argparse.Namespace) -> Retriever:
+    backend = getattr(args, "backend", "memory")
+    if backend == "qdrant" and name in ("dense", "hybrid"):
+        qdrant_url = getattr(args, "qdrant_url", None)
+        store = QdrantVectorStore(url=qdrant_url)
+        dense = DenseRetriever(HashingEmbedder(), store)
+        if name == "dense":
+            return dense
+        return HybridRetriever([dense, BM25Retriever()])
+    return create_retriever(name)
+
+
 def _build_pipeline(
     args: argparse.Namespace,
     retriever_name: str,
@@ -148,7 +180,7 @@ def _build_pipeline(
 ) -> RAGPipeline:
     reranker = CrossTermReranker() if getattr(args, "rerank", False) else None
     pipeline = RAGPipeline(
-        create_retriever(retriever_name),
+        _select_retriever(retriever_name, args),
         generator,
         reranker=reranker,
         mmr_lambda=getattr(args, "mmr", None),

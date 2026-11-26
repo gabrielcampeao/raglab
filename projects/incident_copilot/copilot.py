@@ -85,12 +85,26 @@ class _UnfilteredAdapter(Retriever):
 
 def build_incident_copilot(
     *,
+    backend: str = "memory",
+    qdrant_url: str | None = None,
     max_chars: int = 340,
     overlap: int = 1,
     top_k: int = 3,
 ) -> RAGPipeline:
+    if backend == "qdrant":
+        from raglab.integrations.qdrant import QdrantVectorStore
+
+        dense = DenseRetriever(
+            HashingEmbedder(),
+            QdrantVectorStore(collection_name="atlas_pay_incidents", url=qdrant_url),
+        )
+        retriever: Retriever = HybridRetriever([dense, BM25Retriever()])
+    elif backend == "memory":
+        retriever = HybridRetriever()
+    else:
+        raise ValueError(f"Unsupported backend '{backend}'. Choose 'memory' or 'qdrant'")
     pipeline = RAGPipeline(
-        retriever=HybridRetriever(),
+        retriever=retriever,
         generator=ExtractiveGenerator(
             max_sentences=2,
             min_shared_terms=2,

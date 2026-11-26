@@ -157,3 +157,26 @@ def test_cli_evaluate_on_incident_copilot_reproduces_scoped_triage_hits(
     assert code == 0
     hybrid_line = next(line for line in output.splitlines() if line.startswith("hybrid"))
     assert "1.00" in hybrid_line
+
+
+def test_cli_ask_runs_against_qdrant_backend(capsys: pytest.CaptureFixture[str]) -> None:
+    corpus = Path(__file__).resolve().parents[1] / "projects" / "incident_copilot" / "corpus"
+    code = main(
+        [
+            "ask",
+            "Workers emit SQLSTATE 53300 on Postgres connections. What is the immediate mitigation?",
+            "--data",
+            str(corpus),
+            "--backend",
+            "qdrant",
+            "--filter",
+            "kind=runbook",
+            "--markdown",
+            "--rerank",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert code == 0
+    assert "transaction" in output
+    assert "postgres_pool_saturation.md" in output

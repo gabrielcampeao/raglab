@@ -50,3 +50,13 @@ def test_chunk_sweep_covers_multiple_chunk_sizes() -> None:
     sizes = [entry["max_chars"] for entry in sweep]
     assert sizes == sorted(sizes)
     assert all(0.0 <= float(entry["ndcg_at_3"]) <= 1.0 for entry in sweep)
+
+
+def test_incident_copilot_supports_qdrant_backend() -> None:
+    from projects.incident_copilot.copilot import build_incident_copilot
+
+    copilot = build_incident_copilot(backend="qdrant")
+    outcomes = run_autonomous_playbook(copilot)
+
+    assert len(outcomes) == len(PLAYBOOK_QUESTIONS)
+    assert all(item.grounding.is_verified for item in outcomes)
