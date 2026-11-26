@@ -1,6 +1,14 @@
 import pytest
 
-from raglab.chunking import chunk_documents, chunk_text, split_sentences
+from raglab.chunking import (
+    MarkdownSection,
+    chunk_documents,
+    chunk_markdown,
+    chunk_markdown_documents,
+    chunk_text,
+    split_markdown_sections,
+    split_sentences,
+)
 from raglab.models import Document
 
 
@@ -64,3 +72,80 @@ def test_chunk_source_falls_back_to_document_id() -> None:
     chunks = chunk_documents([Document(id="plain.txt", text="Hello there.")])
 
     assert chunks[0].source == "plain.txt"
+
+
+def test_split_markdown_sections_tracks_heading_hierarchy() -> None:
+    markdown = (
+        "# Postgres saturation\n"
+        "Overview paragraph.\n\n"
+        "## Symptoms\n"
+        "Clients see SQLSTATE 53300.\n\n"
+        "### Metrics\n"
+        "Active connections reach max_connections.\n\n"
+        "## Mitigation\n"
+        "Enable PgBouncer transaction pooling.\n"
+    )
+
+    sections = split_markdown_sections(markdown)
+
+    assert sections == [
+        MarkdownSection(("Postgres saturation",), "Overview paragraph."),
+        MarkdownSection(("Postgres saturation", "Symptoms"), "Clients see SQLSTATE 53300."),
+        MarkdownSection(
+            ("Postgres saturation", "Symptoms", "Metrics"),
+            "Active connections reach max_connections.",
+        ),
+        MarkdownSection(
+            ("Postgres saturation", "Mitigation"),
+            "Enable PgBouncer transaction pooling.",
+        ),
+    ]
+
+
+def test_chunk_markdown_keeps_fenced_code_blocks_intact_when_within_limit() -> None:
+    markdown = (
+        "# Runbook\n"
+        "## Diagnosis\n"
+        "Run this query first.\n\n"
+        "```sql\n"
+        "SELECT state, count(*)\n"
+        "FROM pg_stat_activity\n"
+        "GROUP BY state;\n"
+        "```\n\n"
+        "Then inspect idle transactions.\n"
+    )
+
+    pairs = chunk_markdown(markdown, max_chars=140, overlap=0)
+
+    code_chunks = [text for _, text in pairs if "```sql" in text]
+    assert len(code_chunks) == 1
+    assert "SELECT state, count(*)" in code_chunks[0]
+    assert "GROUP BY state;\n```" in code_chunks[0]
+
+
+def test_chunk_markdown_splits_oversized_fenced_code_blocks_safely() -> None:
+    lines = "\n".join(f"SELECT column_{index} FROM ledger;" for index in range(12))
+    markdown = f"# Runbook\n```sql\n{lines}\n```"
+
+    pairs = chunk_markdown(markdown, max_chars=90, overlap=0)
+
+    assert len(pairs) > 1
+    assert all(len(text) <= 90 for _, text in pairs)
+
+
+def test_chunk_markdown_documents_populates_section_metadata() -> None:
+    doc = Document(
+        id="runbooks/pg.md",
+        text="# Pool saturation\n## Mitigation\nSwitch PgBouncer to transaction mode.",
+        metadata={"source": "runbooks/pg.md", "kind": "runbook"},
+    )
+
+    chunks = chunk_markdown_documents([doc], max_chars=200, overlap=0)
+
+    assert len(chunks) == 1
+    assert chunks[0].metadata == {
+        "source": "runbooks/pg.md",
+        "kind": "runbook",
+        "section": "Pool saturation > Mitigation",
+    }
+    assert "Switch PgBouncer to transaction mode." in chunks[0].text

@@ -1,4 +1,12 @@
-from raglab.chunking import chunk_documents, chunk_text, split_sentences
+from raglab.chunking import (
+    MarkdownSection,
+    chunk_documents,
+    chunk_markdown,
+    chunk_markdown_documents,
+    chunk_text,
+    split_markdown_sections,
+    split_sentences,
+)
 from raglab.documents import load_directory
 from raglab.embeddings import Embedder, HashingEmbedder, TfidfEmbedder
 from raglab.evaluation import EvalCase, RetrievalReport, evaluate_retrieval, load_cases
@@ -41,6 +49,7 @@ __all__ = [
     "HashingEmbedder",
     "HybridRetriever",
     "InMemoryVectorStore",
+    "MarkdownSection",
     "OpenAICompatibleGenerator",
     "RAGPipeline",
     "RetrievalReport",
@@ -50,11 +59,14 @@ __all__ = [
     "__version__",
     "build_prompt",
     "chunk_documents",
+    "chunk_markdown",
+    "chunk_markdown_documents",
     "chunk_text",
     "create_retriever",
     "evaluate_retrieval",
     "format_context",
     "load_cases",
     "load_directory",
+    "split_markdown_sections",
     "split_sentences",
 ]
