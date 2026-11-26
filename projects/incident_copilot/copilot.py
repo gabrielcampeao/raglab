@@ -261,7 +261,7 @@ def run_ablation_suite() -> dict[str, Any]:
 
 
 def run_chunk_sweep(
-    sizes: tuple[int, ...] = (140, 220, 340, 500, 750, 1100),
+    sizes: tuple[int, ...] = (140, 220, 340, 520, 800, 1400),
 ) -> list[dict[str, float | int]]:
     documents = load_incident_corpus()
     cases = load_cases(BENCHMARK_PATH)
@@ -278,7 +278,7 @@ def run_chunk_sweep(
             reranker=CrossTermReranker(),
             candidate_pool=16,
             mmr_lambda=0.65,
-            markdown_aware=True,
+            markdown_aware=False,
             max_chars=size,
             overlap=1,
             top_k=3,

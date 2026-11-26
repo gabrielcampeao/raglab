@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 510" width="980" height="510" role="img" aria-label="Two stage RAG architecture in raglab">
+<defs>
+<linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#0b1120"/>
+<stop offset="100%" stop-color="#111827"/>
+</linearGradient>
+<marker id="arrowCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8"/>
+</marker>
+<marker id="arrowEmerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M 0 1 L 9 5 L 0 9 z" fill="#34d399"/>
+</marker>
+</defs>
+<rect width="980" height="510" rx="16" fill="url(#bgGrad)"/>
+<rect x="1" y="1" width="978" height="508" rx="15" fill="none" stroke="#1e293b" stroke-width="2"/>
+<text x="36.0" y="42.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="21" font-weight="700">Two stage RAG architecture in raglab</text>
+<text x="36.0" y="65.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="400">Offline structural indexing paired with online hybrid retrieval, cross feature reranking, MMR, and verification</text>
+<rect x="28" y="84" width="924" height="168" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1.2"/>
+<text x="46.0" y="108.0" text-anchor="start" fill="#38bdf8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="0.8">OFFLINE INDEXING PIPELINE</text>
+<rect x="46" y="124" width="195" height="108" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="1.6"/>
+<text x="60.0" y="150.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">1. Document Loader</text>
+<text x="60.0" y="170.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Reads .md and .txt files</text>
+<text x="60.0" y="187.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Attaches source, kind,</text>
+<text x="60.0" y="204.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">and service metadata</text>
+<rect x="276" y="124" width="235" height="108" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="1.6"/>
+<text x="290.0" y="150.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">2. Markdown Chunker</text>
+<text x="290.0" y="170.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Tracks ATX heading paths</text>
+<text x="290.0" y="187.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Keeps SQL blocks whole</text>
+<text x="290.0" y="204.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Packs sentences with overlap</text>
+<rect x="550" y="116" width="180" height="54" rx="10" fill="#1e293b" stroke="#818cf8" stroke-width="1.6"/>
+<text x="564.0" y="142.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">3a. Vector Store</text>
+<text x="564.0" y="162.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Hashing or TFIDF L2 vectors</text>
+<rect x="550" y="182" width="180" height="54" rx="10" fill="#1e293b" stroke="#818cf8" stroke-width="1.6"/>
+<text x="564.0" y="208.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">3b. BM25 Index</text>
+<text x="564.0" y="228.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">IDF + length normalized counts</text>
+<rect x="764" y="124" width="170" height="108" rx="10" fill="#1e293b" stroke="#64748b" stroke-width="1.6"/>
+<text x="778.0" y="150.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">JSON Snapshot</text>
+<text x="778.0" y="170.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Deterministic save and</text>
+<text x="778.0" y="187.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">zero refit reload for</text>
+<text x="778.0" y="204.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">stateless embeddings</text>
+<line x1="241" y1="178" x2="272" y2="178" stroke="#38bdf8" stroke-width="2.0" marker-end="url(#arrowCyan)"/>
+<path d="M 511 168 L 530 168 L 530 143 L 546 143" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrowCyan)"/>
+<path d="M 511 188 L 530 188 L 530 209 L 546 209" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrowCyan)"/>
+<line x1="730" y1="143" x2="760" y2="162" stroke="#38bdf8" stroke-width="1.8" marker-end="url(#arrowCyan)"/>
+<rect x="28" y="272" width="924" height="176" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1.2"/>
+<text x="46.0" y="296.0" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="0.8">ONLINE QUERY AND VERIFICATION PIPELINE</text>
+<rect x="46" y="312" width="165" height="116" rx="10" fill="#1e293b" stroke="#34d399" stroke-width="1.6"/>
+<text x="60.0" y="338.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">4. Query + Filters</text>
+<text x="60.0" y="358.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">User question</text>
+<text x="60.0" y="375.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Metadata prefilter:</text>
+<text x="60.0" y="392.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">kind and service</text>
+<rect x="235" y="312" width="175" height="116" rx="10" fill="#1e293b" stroke="#34d399" stroke-width="1.6"/>
+<text x="249.0" y="338.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">5. Hybrid RRF</text>
+<text x="249.0" y="358.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Prefiltered candidate pool</text>
+<text x="249.0" y="375.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Fuses Dense + BM25</text>
+<text x="249.0" y="392.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">by reciprocal rank</text>
+<rect x="434" y="312" width="185" height="116" rx="10" fill="#1e293b" stroke="#f59e0b" stroke-width="1.6"/>
+<text x="448.0" y="338.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">6. Rerank + MMR</text>
+<text x="448.0" y="358.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Term coverage and span</text>
+<text x="448.0" y="375.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Section heading boost</text>
+<text x="448.0" y="392.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">MMR removes duplicates</text>
+<rect x="643" y="312" width="140" height="116" rx="10" fill="#1e293b" stroke="#a78bfa" stroke-width="1.6"/>
+<text x="657.0" y="338.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">7. Token Packer</text>
+<text x="657.0" y="358.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Enforces max token</text>
+<text x="657.0" y="375.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">context budget with</text>
+<text x="657.0" y="392.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">numbered sources</text>
+<rect x="807" y="312" width="127" height="116" rx="10" fill="#1e293b" stroke="#f43f5e" stroke-width="1.6"/>
+<text x="821.0" y="338.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="700">8. Verifier</text>
+<text x="821.0" y="358.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">Checks [n] bounds,</text>
+<text x="821.0" y="375.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">claim support, and</text>
+<text x="821.0" y="392.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11.5" font-weight="400">trap abstention</text>
+<line x1="211" y1="370" x2="231" y2="370" stroke="#34d399" stroke-width="2.0" marker-end="url(#arrowEmerald)"/>
+<line x1="410" y1="370" x2="430" y2="370" stroke="#34d399" stroke-width="2.0" marker-end="url(#arrowEmerald)"/>
+<line x1="619" y1="370" x2="639" y2="370" stroke="#34d399" stroke-width="2.0" marker-end="url(#arrowEmerald)"/>
+<line x1="783" y1="370" x2="803" y2="370" stroke="#34d399" stroke-width="2.0" marker-end="url(#arrowEmerald)"/>
+<path d="M 640 236 L 640 260 L 322 260 L 322 308" fill="none" stroke="#818cf8" stroke-width="1.8" stroke-dasharray="5,4" marker-end="url(#arrowCyan)"/>
+<rect x="28" y="462" width="924" height="32" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+<text x="46.0" y="483.0" text-anchor="start" fill="#cbd5e1" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">Telemetry attached to every Answer: PipelineTrace (retrieval_ms, rerank_ms, generation_ms, context_tokens) + GroundingReport</text>
+</svg>

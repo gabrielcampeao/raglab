@@ -1,0 +1,167 @@
+{
+  "ablation": {
+    "total_documents": 12,
+    "total_cases": 24,
+    "answerable_cases": 20,
+    "unanswerable_cases": 4,
+    "configurations": {
+      "dense": {
+        "chunks": 66,
+        "hit_rate_at_1": 0.9,
+        "hit_rate_at_3": 1.0,
+        "mrr_at_3": 0.95,
+        "ndcg_at_3": 0.9315,
+        "recall_at_3": 0.95,
+        "precision_at_3": 0.5667,
+        "grounded_ratio": 1.0,
+        "verified_rate": 0.875,
+        "abstention_accuracy": 0.25,
+        "mean_latency_ms": 1.683,
+        "categories_ndcg_at_3": {
+          "exact_signal": 1.0,
+          "paraphrase": 1.0,
+          "multi_doc": 0.6667,
+          "scoped_triage": 0.9262
+        }
+      },
+      "tfidf": {
+        "chunks": 66,
+        "hit_rate_at_1": 1.0,
+        "hit_rate_at_3": 1.0,
+        "mrr_at_3": 1.0,
+        "ndcg_at_3": 0.9807,
+        "recall_at_3": 0.975,
+        "precision_at_3": 0.8333,
+        "grounded_ratio": 1.0,
+        "verified_rate": 0.8333,
+        "abstention_accuracy": 0.0,
+        "mean_latency_ms": 9.7,
+        "categories_ndcg_at_3": {
+          "exact_signal": 1.0,
+          "paraphrase": 1.0,
+          "multi_doc": 0.871,
+          "scoped_triage": 1.0
+        }
+      },
+      "bm25": {
+        "chunks": 66,
+        "hit_rate_at_1": 1.0,
+        "hit_rate_at_3": 1.0,
+        "mrr_at_3": 1.0,
+        "ndcg_at_3": 0.9807,
+        "recall_at_3": 0.975,
+        "precision_at_3": 0.85,
+        "grounded_ratio": 1.0,
+        "verified_rate": 0.8333,
+        "abstention_accuracy": 0.0,
+        "mean_latency_ms": 0.299,
+        "categories_ndcg_at_3": {
+          "exact_signal": 1.0,
+          "paraphrase": 1.0,
+          "multi_doc": 0.871,
+          "scoped_triage": 1.0
+        }
+      },
+      "hybrid_rrf": {
+        "chunks": 66,
+        "hit_rate_at_1": 1.0,
+        "hit_rate_at_3": 1.0,
+        "mrr_at_3": 1.0,
+        "ndcg_at_3": 0.9613,
+        "recall_at_3": 0.95,
+        "precision_at_3": 0.8167,
+        "grounded_ratio": 1.0,
+        "verified_rate": 0.8333,
+        "abstention_accuracy": 0.0,
+        "mean_latency_ms": 14.1,
+        "categories_ndcg_at_3": {
+          "exact_signal": 1.0,
+          "paraphrase": 1.0,
+          "multi_doc": 0.7421,
+          "scoped_triage": 1.0
+        }
+      },
+      "senior_full": {
+        "chunks": 43,
+        "hit_rate_at_1": 1.0,
+        "hit_rate_at_3": 1.0,
+        "mrr_at_3": 1.0,
+        "ndcg_at_3": 0.996,
+        "recall_at_3": 1.0,
+        "precision_at_3": 0.8167,
+        "grounded_ratio": 0.95,
+        "verified_rate": 0.9583,
+        "abstention_accuracy": 1.0,
+        "mean_latency_ms": 10.56,
+        "categories_ndcg_at_3": {
+          "exact_signal": 1.0,
+          "paraphrase": 1.0,
+          "multi_doc": 0.9732,
+          "scoped_triage": 1.0
+        }
+      }
+    }
+  },
+  "chunk_sweep": [
+    {
+      "max_chars": 140,
+      "chunks": 116,
+      "hit_rate_at_1": 1.0,
+      "mrr_at_3": 1.0,
+      "ndcg_at_3": 0.992,
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.8833,
+      "avg_context_tokens": 78.2
+    },
+    {
+      "max_chars": 220,
+      "chunks": 77,
+      "hit_rate_at_1": 1.0,
+      "mrr_at_3": 1.0,
+      "ndcg_at_3": 0.992,
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.8167,
+      "avg_context_tokens": 118.3
+    },
+    {
+      "max_chars": 340,
+      "chunks": 59,
+      "hit_rate_at_1": 1.0,
+      "mrr_at_3": 1.0,
+      "ndcg_at_3": 0.992,
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.7833,
+      "avg_context_tokens": 159.3
+    },
+    {
+      "max_chars": 520,
+      "chunks": 32,
+      "hit_rate_at_1": 1.0,
+      "mrr_at_3": 1.0,
+      "ndcg_at_3": 0.9766,
+      "recall_at_3": 0.975,
+      "precision_at_3": 0.7,
+      "avg_context_tokens": 242.7
+    },
+    {
+      "max_chars": 800,
+      "chunks": 23,
+      "hit_rate_at_1": 1.0,
+      "mrr_at_3": 1.0,
+      "ndcg_at_3": 0.9726,
+      "recall_at_3": 0.975,
+      "precision_at_3": 0.6,
+      "avg_context_tokens": 304.0
+    },
+    {
+      "max_chars": 1400,
+      "chunks": 12,
+      "hit_rate_at_1": 1.0,
+      "mrr_at_3": 1.0,
+      "ndcg_at_3": 1.0,
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.3833,
+      "avg_context_tokens": 465.7
+    }
+  ]
+}

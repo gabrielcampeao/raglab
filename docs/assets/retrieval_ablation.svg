@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 470" width="960" height="470" role="img" aria-label="Pipeline ablation benchmark on Incident Copilot">
+<defs>
+<linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#0b1120"/>
+<stop offset="100%" stop-color="#111827"/>
+</linearGradient>
+<marker id="arrowCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8"/>
+</marker>
+<marker id="arrowEmerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M 0 1 L 9 5 L 0 9 z" fill="#34d399"/>
+</marker>
+</defs>
+<rect width="960" height="470" rx="16" fill="url(#bgGrad)"/>
+<rect x="1" y="1" width="958" height="468" rx="15" fill="none" stroke="#1e293b" stroke-width="2"/>
+<text x="36.0" y="42.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="20" font-weight="700">Pipeline ablation on Atlas Pay Incident Copilot (24 benchmark cases)</text>
+<text x="36.0" y="64.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="400">Retrieval ranking quality on 20 answerable incidents plus end to end verified rate across all 24 cases</text>
+<rect x="548" y="82" width="12" height="12" rx="3" fill="#38bdf8"/>
+<text x="566.0" y="92.0" text-anchor="start" fill="#cbd5e1" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">Hit@1</text>
+<rect x="646" y="82" width="12" height="12" rx="3" fill="#34d399"/>
+<text x="664.0" y="92.0" text-anchor="start" fill="#cbd5e1" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">NDCG@3</text>
+<rect x="744" y="82" width="12" height="12" rx="3" fill="#a78bfa"/>
+<text x="762.0" y="92.0" text-anchor="start" fill="#cbd5e1" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">Recall@3</text>
+<rect x="842" y="82" width="12" height="12" rx="3" fill="#f59e0b"/>
+<text x="860.0" y="92.0" text-anchor="start" fill="#cbd5e1" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">Verified E2E</text>
+<line x1="76" y1="398.0" x2="916" y2="398.0" stroke="#1e293b" stroke-width="1.2"/>
+<text x="64.0" y="402.0" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.0</text>
+<line x1="76" y1="342.0" x2="916" y2="342.0" stroke="#1e293b" stroke-width="1.2"/>
+<text x="64.0" y="346.0" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.2</text>
+<line x1="76" y1="286.0" x2="916" y2="286.0" stroke="#1e293b" stroke-width="1.2"/>
+<text x="64.0" y="290.0" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.4</text>
+<line x1="76" y1="230.0" x2="916" y2="230.0" stroke="#1e293b" stroke-width="1.2"/>
+<text x="64.0" y="234.0" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.6</text>
+<line x1="76" y1="174.0" x2="916" y2="174.0" stroke="#1e293b" stroke-width="1.2"/>
+<text x="64.0" y="178.0" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.8</text>
+<line x1="76" y1="118.0" x2="916" y2="118.0" stroke="#1e293b" stroke-width="1.2"/>
+<text x="64.0" y="122.0" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">1.0</text>
+<rect x="95.0" y="146.0" width="28" height="252.0" rx="4" fill="#38bdf8"/>
+<text x="109.0" y="140.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.90</text>
+<rect x="129.0" y="137.2" width="28" height="260.8" rx="4" fill="#34d399"/>
+<text x="143.0" y="131.2" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.93</text>
+<rect x="163.0" y="132.0" width="28" height="266.0" rx="4" fill="#a78bfa"/>
+<text x="177.0" y="126.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.95</text>
+<rect x="197.0" y="153.0" width="28" height="245.0" rx="4" fill="#f59e0b"/>
+<text x="211.0" y="147.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.88</text>
+<text x="160.0" y="424.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="600">Dense</text>
+<text x="160.0" y="443.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">trap abstain: 25%</text>
+<rect x="263.0" y="118.0" width="28" height="280.0" rx="4" fill="#38bdf8"/>
+<text x="277.0" y="112.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">1.00</text>
+<rect x="297.0" y="123.4" width="28" height="274.6" rx="4" fill="#34d399"/>
+<text x="311.0" y="117.4" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.98</text>
+<rect x="331.0" y="125.0" width="28" height="273.0" rx="4" fill="#a78bfa"/>
+<text x="345.0" y="119.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.97</text>
+<rect x="365.0" y="164.7" width="28" height="233.3" rx="4" fill="#f59e0b"/>
+<text x="379.0" y="158.7" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.83</text>
+<text x="328.0" y="424.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="600">TFIDF</text>
+<text x="328.0" y="443.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">trap abstain: 0%</text>
+<rect x="431.0" y="118.0" width="28" height="280.0" rx="4" fill="#38bdf8"/>
+<text x="445.0" y="112.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">1.00</text>
+<rect x="465.0" y="123.4" width="28" height="274.6" rx="4" fill="#34d399"/>
+<text x="479.0" y="117.4" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.98</text>
+<rect x="499.0" y="125.0" width="28" height="273.0" rx="4" fill="#a78bfa"/>
+<text x="513.0" y="119.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.97</text>
+<rect x="533.0" y="164.7" width="28" height="233.3" rx="4" fill="#f59e0b"/>
+<text x="547.0" y="158.7" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.83</text>
+<text x="496.0" y="424.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="600">BM25</text>
+<text x="496.0" y="443.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">trap abstain: 0%</text>
+<rect x="599.0" y="118.0" width="28" height="280.0" rx="4" fill="#38bdf8"/>
+<text x="613.0" y="112.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">1.00</text>
+<rect x="633.0" y="128.8" width="28" height="269.2" rx="4" fill="#34d399"/>
+<text x="647.0" y="122.8" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.96</text>
+<rect x="667.0" y="132.0" width="28" height="266.0" rx="4" fill="#a78bfa"/>
+<text x="681.0" y="126.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.95</text>
+<rect x="701.0" y="164.7" width="28" height="233.3" rx="4" fill="#f59e0b"/>
+<text x="715.0" y="158.7" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.83</text>
+<text x="664.0" y="424.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="600">Hybrid RRF</text>
+<text x="664.0" y="443.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">trap abstain: 0%</text>
+<rect x="767.0" y="118.0" width="28" height="280.0" rx="4" fill="#38bdf8"/>
+<text x="781.0" y="112.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">1.00</text>
+<rect x="801.0" y="119.1" width="28" height="278.9" rx="4" fill="#34d399"/>
+<text x="815.0" y="113.1" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">1.00</text>
+<rect x="835.0" y="118.0" width="28" height="280.0" rx="4" fill="#a78bfa"/>
+<text x="849.0" y="112.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">1.00</text>
+<rect x="869.0" y="129.7" width="28" height="268.3" rx="4" fill="#f59e0b"/>
+<text x="883.0" y="123.7" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="10.5" font-weight="600">0.96</text>
+<text x="832.0" y="424.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="600">Senior Full</text>
+<text x="832.0" y="443.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">trap abstain: 100%</text>
+</svg>
