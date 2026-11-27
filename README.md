@@ -1,10 +1,6 @@
 <div align="center">
   <img src="docs/assets/raglab_logo.svg" alt="raglab mark" width="124" height="124" />
   <h1>Raglab</h1>
-</div>
-
----
-<div align="center">
   <p><strong>Modular two stage Retrieval Augmented Generation, hybrid search, and grounding verification for Python.</strong></p>
   <p>
     <a href="https://github.com/gabrielcampeao/raglab/releases/tag/v0.4.0"><img src="https://img.shields.io/badge/release-v0.4.0-0969da?style=flat" alt="Release v0.4.0" /></a>
