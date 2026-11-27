@@ -10,6 +10,7 @@ from raglab.chunking import (
     split_sentences,
 )
 from raglab.conversation import ConversationalRAG, ConversationTurn, condense_follow_up
+from raglab.corrective import CorrectiveOutcome, CorrectiveRAG, CorrectiveStep
 from raglab.documents import load_directory
 from raglab.embeddings import Embedder, HashingEmbedder, TfidfEmbedder
 from raglab.evaluation import (
@@ -28,6 +29,8 @@ from raglab.generation import (
     Generator,
     OpenAICompatibleGenerator,
 )
+from raglab.graph import EntityGraphRetriever, KnowledgeGraph, extract_entities
+from raglab.hnsw import HNSWVectorStore
 from raglab.models import Chunk, Document, SearchResult
 from raglab.parent_child import ParentChildRetriever, build_parent_child_chunks
 from raglab.pipeline import Answer, PipelineTrace, RAGPipeline
@@ -75,22 +78,28 @@ __all__ = [
     "ContextSanitizer",
     "ConversationTurn",
     "ConversationalRAG",
+    "CorrectiveOutcome",
+    "CorrectiveRAG",
+    "CorrectiveStep",
     "CrossTermReranker",
     "DenseRetriever",
     "Document",
     "Embedder",
     "EndToEndReport",
+    "EntityGraphRetriever",
     "EvalCase",
     "ExtractiveGenerator",
     "GenerationError",
     "Generator",
     "GroundingReport",
+    "HNSWVectorStore",
     "HashingEmbedder",
     "HyDERetriever",
     "HybridRetriever",
     "InMemoryTraceSink",
     "InMemoryVectorStore",
     "JsonlTraceSink",
+    "KnowledgeGraph",
     "MarkdownSection",
     "MetadataFilter",
     "MultiQueryRetriever",
@@ -126,6 +135,7 @@ __all__ = [
     "evaluate_by_category",
     "evaluate_pipeline",
     "evaluate_retrieval",
+    "extract_entities",
     "format_context",
     "load_cases",
     "load_directory",
