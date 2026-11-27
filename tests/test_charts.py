@@ -10,6 +10,7 @@ EXPECTED_SVGS = (
     "raglab_logo.svg",
     "architecture_overview.svg",
     "ecosystem_tooling_map.svg",
+    "advanced_rag_taxonomy.svg",
     "retrieval_ablation.svg",
     "chunk_size_tradeoff.svg",
     "latency_vs_quality.svg",
@@ -43,6 +44,7 @@ def test_svg_charts_match_generator_output_and_live_ablation_metrics() -> None:
         render_chunk_sweep_svg,
         render_ecosystem_svg,
         render_latency_quality_svg,
+        render_taxonomy_svg,
     )
 
     payload = json.loads(RESULTS_PATH.read_text(encoding="utf-8"))
@@ -52,6 +54,9 @@ def test_svg_charts_match_generator_output_and_live_ablation_metrics() -> None:
     assert (ASSETS_DIR / "ecosystem_tooling_map.svg").read_text(
         encoding="utf-8"
     ) == render_ecosystem_svg()
+    assert (ASSETS_DIR / "advanced_rag_taxonomy.svg").read_text(
+        encoding="utf-8"
+    ) == render_taxonomy_svg()
     assert (ASSETS_DIR / "retrieval_ablation.svg").read_text(
         encoding="utf-8"
     ) == render_ablation_svg(payload["ablation"])

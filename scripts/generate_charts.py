@@ -340,6 +340,82 @@ def render_ecosystem_svg() -> str:
     return "\n".join(out) + "\n"
 
 
+def render_taxonomy_svg() -> str:
+    width, height = 980, 440
+    out = _svg_header(width, height, "Evolution of RAG paradigms")
+    out.append(
+        _text(
+            36,
+            42,
+            "Evolution of RAG architectures: from single stage lookup to modular control",
+            size=20,
+            weight="700",
+        )
+    )
+    subtitle = (
+        "How each architectural generation addresses a specific retrieval, "
+        "context, or grounding failure mode"
+    )
+    out.append(_text(36, 64, subtitle, fill="#94a3b8", size=13))
+
+    tiers = [
+        (
+            "1. NAIVE SINGLE STAGE",
+            "#64748b",
+            (
+                ("Fixed char chunking", ("Splits code & headings;", "loses section scope")),
+                ("Single vector top k", ("Misses exact error codes;", "sibling chunks crowd k")),
+                ("Direct prompt stuff", ("Fabricates answers on", "out of scope traps")),
+            ),
+        ),
+        (
+            "2. TWO STAGE MODULAR",
+            "#38bdf8",
+            (
+                ("Structure + Metadata", ("Markdown heading stack", "and prefiltered pools")),
+                ("Hybrid RRF + Rerank", ("Dense + BM25 fused,", "rescored & MMR diverse")),
+                ("Grounding Verifier", ("Checks [n] bounds and", "enforces abstention")),
+            ),
+        ),
+        (
+            "3. HIERARCHICAL & QUERY",
+            "#a78bfa",
+            (
+                ("Small to Big Chunks", ("Search 180c children,", "return 750c parents")),
+                ("Decompose & HyDE", ("Interleave sub queries;", "hypothetical drafts")),
+                ("Edge Context Order", ("Mitigates Lost in the", "Middle attention dip")),
+            ),
+        ),
+        (
+            "4. STATEFUL & AGENTIC",
+            "#34d399",
+            (
+                ("Conversational RAG", ("Condenses pronouns from", "prior turn anchors")),
+                ("Corrective Loops", ("Confidence gate triggers", "query rewrite or web")),
+                ("GraphRAG Summaries", ("Entity communities for", "corpus wide synthesis")),
+            ),
+        ),
+    ]
+
+    col_w, gap, start_x = 216, 18, 31
+    for idx, (heading, color, cards) in enumerate(tiers):
+        cx = start_x + idx * (col_w + gap)
+        out.append(
+            f'<rect x="{cx}" y="88" width="{col_w}" height="324" rx="12" '
+            'fill="#0f172a" stroke="#334155" stroke-width="1.2"/>'
+        )
+        out.append(_text(cx + 14, 112, heading, fill=color, size=11, weight="700", spacing="0.6"))
+        for c_idx, (title, lines) in enumerate(cards):
+            cy = 128 + c_idx * 90
+            out.append(_card(cx + 12, cy, col_w - 24, 76, color, title, lines))
+        if idx < len(tiers) - 1:
+            ax = cx + col_w + 2
+            out.append(_arrow(ax, 250, ax + gap - 4, 250, "#38bdf8", "arrowCyan", 1.8))
+
+    out.append("</svg>")
+    return "\n".join(out) + "\n"
+
+
 def render_ablation_svg(ablation: dict[str, Any]) -> str:
     width, height = 960, 470
     configs = ablation["configurations"]
@@ -649,6 +725,7 @@ def generate_all(root: Path | None = None) -> dict[str, Any]:
     assets.mkdir(parents=True, exist_ok=True)
     (assets / "architecture_overview.svg").write_text(render_architecture_svg(), encoding="utf-8")
     (assets / "ecosystem_tooling_map.svg").write_text(render_ecosystem_svg(), encoding="utf-8")
+    (assets / "advanced_rag_taxonomy.svg").write_text(render_taxonomy_svg(), encoding="utf-8")
     (assets / "retrieval_ablation.svg").write_text(render_ablation_svg(ablation), encoding="utf-8")
     (assets / "chunk_size_tradeoff.svg").write_text(render_chunk_sweep_svg(sweep), encoding="utf-8")
     (assets / "latency_vs_quality.svg").write_text(
@@ -661,7 +738,7 @@ def main() -> None:
     payload = generate_all(_project_root())
     senior = payload["ablation"]["configurations"]["senior_full"]
     print(
-        f"Generated 4 SVG charts and benchmark_results.json "
+        f"Generated 6 SVG charts and benchmark_results.json "
         f"(senior_full NDCG@3={senior['ndcg_at_3']:.2f}, verified={senior['verified_rate']:.2f})"
     )
 

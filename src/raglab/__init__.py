@@ -9,6 +9,7 @@ from raglab.chunking import (
     split_markdown_sections,
     split_sentences,
 )
+from raglab.conversation import ConversationalRAG, ConversationTurn, condense_follow_up
 from raglab.documents import load_directory
 from raglab.embeddings import Embedder, HashingEmbedder, TfidfEmbedder
 from raglab.evaluation import (
@@ -28,6 +29,7 @@ from raglab.generation import (
     OpenAICompatibleGenerator,
 )
 from raglab.models import Chunk, Document, SearchResult
+from raglab.parent_child import ParentChildRetriever, build_parent_child_chunks
 from raglab.pipeline import Answer, PipelineTrace, RAGPipeline
 from raglab.prompting import (
     DEFAULT_TEMPLATE,
@@ -35,8 +37,16 @@ from raglab.prompting import (
     estimate_tokens,
     format_context,
     pack_context,
+    reorder_lost_in_middle,
 )
-from raglab.query import AcronymQueryExpander, MultiQueryRetriever, QueryExpander
+from raglab.query import (
+    AcronymQueryExpander,
+    HyDERetriever,
+    MultiQueryRetriever,
+    QueryExpander,
+    SubQuestionDecomposer,
+    decompose_query,
+)
 from raglab.reranking import CrossTermReranker, Reranker, diversify_mmr
 from raglab.retrievers import (
     RETRIEVER_NAMES,
@@ -63,6 +73,8 @@ __all__ = [
     "BM25Retriever",
     "Chunk",
     "ContextSanitizer",
+    "ConversationTurn",
+    "ConversationalRAG",
     "CrossTermReranker",
     "DenseRetriever",
     "Document",
@@ -74,6 +86,7 @@ __all__ = [
     "Generator",
     "GroundingReport",
     "HashingEmbedder",
+    "HyDERetriever",
     "HybridRetriever",
     "InMemoryTraceSink",
     "InMemoryVectorStore",
@@ -82,6 +95,7 @@ __all__ = [
     "MetadataFilter",
     "MultiQueryRetriever",
     "OpenAICompatibleGenerator",
+    "ParentChildRetriever",
     "PipelineTrace",
     "QueryExpander",
     "RAGPipeline",
@@ -91,18 +105,22 @@ __all__ = [
     "SearchResult",
     "SecurityFinding",
     "SemanticCache",
+    "SubQuestionDecomposer",
     "TfidfEmbedder",
     "TraceEvent",
     "TraceSink",
     "VectorStore",
     "__version__",
+    "build_parent_child_chunks",
     "build_prompt",
     "chunk_documents",
     "chunk_markdown",
     "chunk_markdown_documents",
     "chunk_text",
+    "condense_follow_up",
     "create_retriever",
     "create_server",
+    "decompose_query",
     "diversify_mmr",
     "estimate_tokens",
     "evaluate_by_category",
@@ -113,6 +131,7 @@ __all__ = [
     "load_directory",
     "matches_filters",
     "pack_context",
+    "reorder_lost_in_middle",
     "split_markdown_sections",
     "split_sentences",
     "strip_invisible_characters",

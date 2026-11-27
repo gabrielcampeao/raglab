@@ -58,6 +58,20 @@ def pack_context(results: Sequence[SearchResult], max_tokens: int) -> list[Searc
     return packed
 
 
+def reorder_lost_in_middle(results: Sequence[SearchResult]) -> list[SearchResult]:
+    if len(results) <= 2:
+        return list(results)
+    front: list[SearchResult] = []
+    back: list[SearchResult] = []
+    for index, item in enumerate(results):
+        if index % 2 == 0:
+            front.append(item)
+        else:
+            back.append(item)
+    back.reverse()
+    return [*front, *back]
+
+
 def build_prompt(
     question: str, results: Sequence[SearchResult], template: str = DEFAULT_TEMPLATE
 ) -> str:

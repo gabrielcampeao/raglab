@@ -169,7 +169,11 @@ def evaluate_pipeline(
         answer = pipeline.ask(case.question, k=k, filters=filters)
         latency_total += answer.trace.total_ms
         if case.answerable:
-            sources = [result.chunk.source for result in answer.sources[:k]]
+            sources = (
+                list(answer.trace.ranked_sources[:k])
+                if answer.trace.ranked_sources
+                else [result.chunk.source for result in answer.sources[:k]]
+            )
             ranked_answerable.append((case, sources))
             if answer.grounding.abstained:
                 grounded_scores.append(0.0)
