@@ -7,6 +7,7 @@ ASSETS_DIR = PROJECT_ROOT / "docs" / "assets"
 RESULTS_PATH = PROJECT_ROOT / "projects" / "incident_copilot" / "benchmark_results.json"
 
 EXPECTED_SVGS = (
+    "raglab_logo.svg",
     "architecture_overview.svg",
     "ecosystem_tooling_map.svg",
     "retrieval_ablation.svg",

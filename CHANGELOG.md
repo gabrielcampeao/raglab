@@ -12,7 +12,7 @@ Notable changes to `raglab` follow [Keep a Changelog](https://keepachangelog.com
 * Structured telemetry sinks (`TraceEvent`, `InMemoryTraceSink`, `JsonlTraceSink`) in `src/raglab/telemetry.py`.
 * Zero dependency HTTP API and browser `raglab Inspector` (`src/raglab/server.py` and `raglab serve`) serving `/healthz`, `/v1/search`, `/v1/ask`, and `/` UI.
 * PEP 561 `py.typed` marker, `mypy --strict` static type checking, and dedicated `typecheck` and `security` GitHub Actions jobs.
-* Repository governance files (`SECURITY.md`, `CODE_OF_CONDUCT.md`, GitHub issue templates, Dependabot configuration) and centered hero header with custom mascot emblem.
+* Repository governance files (`SECURITY.md`, `CODE_OF_CONDUCT.md`, GitHub issue templates, Dependabot configuration) and centered hero header with geometric SVG brand mark.
 
 ## [0.3.0] November 26, 2026
 

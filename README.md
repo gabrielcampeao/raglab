@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/assets/raglab_mascot.png" alt="raglab mascot" width="190" />
+  <img src="docs/assets/raglab_logo.svg" alt="raglab mark" width="124" height="124" />
   <h1>raglab</h1>
 </div>
 
@@ -246,7 +246,7 @@ raglab/
 ├── examples/                    Six progressive runnable scripts (01_quickstart to 06_qdrant_hybrid)
 ├── deploy/compose.yaml          Local Docker stack (Qdrant + PostgreSQL pgvector + Ollama)
 ├── docs/
-│   ├── assets/                  Mascot emblem plus five deterministic SVG architecture & benchmark charts
+│   ├── assets/                  Geometric SVG brand mark plus five deterministic benchmark charts
 │   ├── how_rag_works.md         Mathematical derivations and failure mode diagnostics
 │   ├── ecosystem_and_tools.md   Deep dive into Qdrant, pgvector, Chroma, Milvus, FAISS, and rerankers
 │   ├── use_cases.md             Domain configurations and RAG anti patterns
