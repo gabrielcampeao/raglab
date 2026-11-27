@@ -2,18 +2,24 @@
 
 Notable changes to `raglab` follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] November 27, 2026
+
+### Added
+
+* `ContextSanitizer` (`src/raglab/security.py`) stripping invisible Unicode smuggling characters and blocking or redacting indirect prompt injection payloads before prompt assembly.
+* Filter isolated `SemanticCache` (`src/raglab/cache.py`) with cosine threshold matching, TTL expiration, bounded capacity, and `PipelineTrace.cache_hit` tracking.
+* `AcronymQueryExpander` and `MultiQueryRetriever` (`src/raglab/query.py`) fusing expanded operational queries via Reciprocal Rank Fusion.
+* Structured telemetry sinks (`TraceEvent`, `InMemoryTraceSink`, `JsonlTraceSink`) in `src/raglab/telemetry.py`.
+* Zero dependency HTTP API and browser `raglab Inspector` (`src/raglab/server.py` and `raglab serve`) serving `/healthz`, `/v1/search`, `/v1/ask`, and `/` UI.
+* PEP 561 `py.typed` marker, `mypy --strict` static type checking, and dedicated `typecheck` and `security` GitHub Actions jobs.
+* Repository governance files (`SECURITY.md`, `CODE_OF_CONDUCT.md`, GitHub issue templates, Dependabot configuration) and centered hero header with custom mascot emblem.
+
 ## [0.3.0] November 26, 2026
 
 ### Added
 
-* `VectorStore` abstract base interface enabling pluggable vector database backends inside `DenseRetriever` and `HybridRetriever`.
-* `QdrantVectorStore` integration (`src/raglab/integrations/qdrant.py`) supporting `:memory:`, local disk, and remote Qdrant clusters via `query_points` and native `Filter` / `FieldCondition` payload pushdown.
-* `PgVectorStore` integration (`src/raglab/integrations/pgvector.py`) for PostgreSQL 16+ with `HNSW` cosine indexing (`vector_cosine_ops`), `GIN` JSONB indexing (`jsonb_path_ops`), and `@>` metadata prefiltering.
-* `ChromaVectorStore` integration (`src/raglab/integrations/chroma.py`) supporting ephemeral, persistent, and HTTP Chroma collections with compound `$and` / `$eq` filters.
-* `OpenAIEmbedder` and `OllamaEmbedder` (`src/raglab/integrations/embeddings.py`) plus `CohereCompatibleReranker` (`src/raglab/integrations/rerankers.py`).
-* `--backend {memory,qdrant}` and `--qdrant-url` options in `raglab` CLI and `backend="qdrant"` support in `build_incident_copilot`.
-* Runnable example `examples/06_qdrant_hybrid.py` and Docker Compose stack `deploy/compose.yaml` (`Qdrant`, `pgvector`, `Ollama`).
-* Production RAG ecosystem architecture diagram (`docs/assets/ecosystem_tooling_map.svg`) and deep dive engineering guide (`docs/ecosystem_and_tools.md`).
+* `VectorStore` interface plus `QdrantVectorStore`, `PgVectorStore`, `ChromaVectorStore`, `OpenAIEmbedder`, `OllamaEmbedder`, and `CohereCompatibleReranker` in `src/raglab/integrations`.
+* `--backend {memory,qdrant}` CLI support, `examples/06_qdrant_hybrid.py`, `deploy/compose.yaml`, `docs/ecosystem_and_tools.md`, and `docs/assets/ecosystem_tooling_map.svg`.
 
 ### Removed
 
@@ -23,15 +29,10 @@ Notable changes to `raglab` follow [Keep a Changelog](https://keepachangelog.com
 
 ### Added
 
-* Structure aware Markdown chunking (`split_markdown_sections`, `chunk_markdown`, `chunk_markdown_documents`) preserving ATX heading breadcrumbs in `metadata["section"]` and keeping fenced code blocks intact.
-* Exact metadata prefiltering (`filters`) across `DenseRetriever`, `BM25Retriever`, and `HybridRetriever`, plus `metadata.json` corpus manifest loading.
-* Second stage `CrossTermReranker` and Maximal Marginal Relevance diversification (`diversify_mmr`).
-* Token budget context packing (`estimate_tokens`, `pack_context`) and post generation `verify_answer` guardrail (`GroundingReport`).
-* Stage level latency telemetry (`PipelineTrace`), `NDCG@k`, `Precision@k`, `evaluate_by_category`, and `evaluate_pipeline`.
-* Flagship `projects/incident_copilot` SRE Incident Triage and Architecture Copilot with 12 operational documents, 24 benchmark cases, autonomous playbook runner, and SVG benchmark charts.
+* Structure aware Markdown chunking, metadata prefiltering, `CrossTermReranker`, `diversify_mmr`, token budget packing, `verify_answer` grounding guardrail, `NDCG@k`, `projects/incident_copilot`, and deterministic SVG benchmark charts.
 
 ## [0.1.0] November 26, 2026
 
 ### Added
 
-* Directory loader, sentence chunker, `HashingEmbedder`, `TfidfEmbedder`, `InMemoryVectorStore`, `DenseRetriever`, `BM25Retriever`, `HybridRetriever`, grounded prompt builder, `ExtractiveGenerator`, `OpenAICompatibleGenerator`, retrieval evaluation, and `raglab` CLI.
+* Core document loader, sentence chunker, `HashingEmbedder`, `TfidfEmbedder`, `InMemoryVectorStore`, `DenseRetriever`, `BM25Retriever`, `HybridRetriever`, `ExtractiveGenerator`, `OpenAICompatibleGenerator`, evaluation metrics, and `raglab` CLI.

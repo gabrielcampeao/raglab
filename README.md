@@ -1,44 +1,55 @@
-# raglab
+<div align="center">
+  <img src="docs/assets/raglab_mascot.png" alt="raglab mascot" width="190" />
+  <h1>raglab</h1>
+</div>
 
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![Vector Stores](https://img.shields.io/badge/vector%20stores-Qdrant%20%7C%20pgvector%20%7C%20Chroma%20%7C%20Memory-0f172a)
-![Architecture](https://img.shields.io/badge/pipeline-Hybrid%20RRF%20%2B%20Rerank%20%2B%20MMR%20%2B%20Verifier-059669)
+---
 
-`raglab` is a modular two stage Retrieval Augmented Generation (RAG) engine, ecosystem integration layer, and SRE benchmark suite in Python.
+<div align="center">
+  <p><strong>Modular two stage Retrieval Augmented Generation, hybrid search, and grounding verification for Python.</strong></p>
+  <p>
+    <a href="https://github.com/gabrielcampeao/raglab/releases/tag/v0.4.0"><img src="https://img.shields.io/badge/release-v0.4.0-0969da?style=flat" alt="Release v0.4.0" /></a>
+    <a href="https://github.com/gabrielcampeao/raglab/actions/workflows/ci.yml"><img src="https://img.shields.io/badge/ci%20workflow-passing-2da44e?style=flat&logo=github" alt="CI workflow passing" /></a>
+    <a href="SECURITY.md"><img src="https://img.shields.io/badge/security%20audit-passing-2da44e?style=flat&logo=github" alt="Security audit passing" /></a>
+    <a href="pyproject.toml"><img src="https://img.shields.io/badge/mypy-strict-0969da?style=flat" alt="mypy strict" /></a>
+    <a href="docs/ecosystem_and_tools.md"><img src="https://img.shields.io/badge/vectors-Qdrant%20%C2%B7%20pgvector%20%C2%B7%20Chroma-1f2328?style=flat" alt="Vector stores" /></a>
+  </p>
+  <p>
+    <a href="#5-quick-start">Quickstart</a> ·
+    <a href="SECURITY.md">Security</a> ·
+    <a href="#1-two-stage-rag-architecture">Architecture</a> ·
+    <a href="#3-empirical-benchmarks-and-ablation-charts">Benchmarks</a> ·
+    <a href="docs/ecosystem_and_tools.md">Ecosystem</a> ·
+    <a href="CONTRIBUTING.md">Contributing</a>
+  </p>
+</div>
 
-It pairs a transparent, zero dependency core engine with pluggable production connectors for **Qdrant**, **PostgreSQL (`pgvector`)**, **Chroma**, **OpenAI and Ollama neural embeddings**, **Cohere / vLLM / TEI cross encoder rerankers**, and **OpenAI compatible LLM servers**. Every stage of the RAG lifecycle is explicit, typed, instrumented with latency telemetry, and backed by reproducible ablation benchmarks.
+<br />
 
-Alongside the library, [projects/incident_copilot](projects/incident_copilot/README.md) implements a complete operational application on top of `raglab`: an on call SRE Incident Triage and Architecture Copilot for a payment platform (`Atlas Pay`), featuring runbooks, postmortems, architecture decision records, an autonomous question answering playbook, and multi stage evaluation.
+`raglab` is a modular two stage Retrieval Augmented Generation (RAG) engine, security and verification layer, and SRE benchmark suite in Python.
 
-## Contents
+It combines a transparent, zero dependency core engine with production connectors for **Qdrant**, **PostgreSQL (`pgvector`)**, **Chroma**, **OpenAI and Ollama neural embeddings**, **Cohere / vLLM / TEI cross encoder rerankers**, **indirect prompt injection sanitization**, **scope isolated semantic caching**, and an **interactive HTTP inspector (`raglab serve`)**. Every stage of the RAG lifecycle is strictly typed (`mypy --strict`), instrumented with latency telemetry, and backed by reproducible ablation benchmarks.
 
-1. [Two stage RAG architecture](#1-two-stage-rag-architecture)
-2. [Production ecosystem integrations (Qdrant, pgvector, Chroma, neural models)](#2-production-ecosystem-integrations)
-3. [Empirical benchmarks and ablation charts](#3-empirical-benchmarks-and-ablation-charts)
-4. [Flagship system: Atlas Pay Incident Copilot](#4-flagship-system-atlas-pay-incident-copilot)
-5. [Quick start (In memory, Qdrant, and Docker stack)](#5-quick-start)
-6. [Python API and pluggable connectors](#6-python-api-and-pluggable-connectors)
-7. [Repository structure and documentation map](#7-repository-structure-and-documentation-map)
-8. [Verification and engineering standards](#8-verification-and-engineering-standards)
+Alongside the library, [projects/incident_copilot](projects/incident_copilot/README.md) ships a complete operational system built on `raglab`: an on call SRE Incident Triage and Architecture Copilot for a payment platform (`Atlas Pay`), featuring runbooks, postmortems, architecture decision records, an autonomous question answering playbook, and multi stage evaluation.
 
 ## 1. Two stage RAG architecture
 
 ![Two stage RAG architecture in raglab](docs/assets/architecture_overview.svg)
 
-A production RAG system separates candidate recall from top k precision and treats generation as an untrusted consumer of cited passages. `raglab` executes indexing ahead of time and runs a structured query and verification funnel on every request.
+A reliable RAG pipeline separates candidate recall from top k precision and treats generation as an untrusted consumer of retrieved passages. `raglab` executes structural indexing offline and runs a verified funnel on every query.
 
 | Stage | Responsibility | Core module |
 | --- | --- | --- |
 | 1. Document ingestion | Loads `.md` and `.txt` corpora and merges optional `metadata.json` facets (`kind`, `service`) | [documents.py](src/raglab/documents.py) |
-| 2. Markdown chunking | Tracks ATX heading stacks into `metadata["section"]` breadcrumbs and keeps fenced SQL or code blocks atomic | [chunking.py](src/raglab/chunking.py) |
-| 3. Vector & BM25 indexing | Builds L2 normalized dense vectors (`InMemoryVectorStore`, `QdrantVectorStore`, `PgVectorStore`, `ChromaVectorStore`) plus an Okapi `BM25Retriever` inverted index | [embeddings.py](src/raglab/embeddings.py), [vectorstore.py](src/raglab/vectorstore.py), [retrievers.py](src/raglab/retrievers.py) |
-| 4. Prefiltered Hybrid RRF | Evaluates metadata predicates before top k truncation and fuses dense and lexical rankings via Reciprocal Rank Fusion | [retrievers.py](src/raglab/retrievers.py) |
-| 5. Reranking & MMR | Rescores candidate pools with `CrossTermReranker` or `CohereCompatibleReranker`, then suppresses near duplicate siblings with `diversify_mmr` | [reranking.py](src/raglab/reranking.py), [rerankers.py](src/raglab/integrations/rerankers.py) |
-| 6. Token budget packing | Packs ranked chunks greedily within `max_context_tokens` with numbered source and section headers | [prompting.py](src/raglab/prompting.py) |
-| 7. Grounding verification | Audits `[n]` citation bounds, sentence level lexical attribution, and clean abstention on out of scope traps | [generation.py](src/raglab/generation.py), [verification.py](src/raglab/verification.py) |
-| 8. Telemetry & metrics | Emits `PipelineTrace` per query and computes `Hit@k`, `MRR@k`, `NDCG@k`, `Recall@k`, `Precision@k`, and `EndToEndReport` | [pipeline.py](src/raglab/pipeline.py), [evaluation.py](src/raglab/evaluation.py) |
+| 2. Markdown chunking | Tracks ATX heading stacks into `metadata["section"]` breadcrumbs and keeps fenced SQL or code blocks intact | [chunking.py](src/raglab/chunking.py) |
+| 3. Query expansion & cache | Expands operational acronyms (`MultiQueryRetriever`) and serves filter isolated hits from `SemanticCache` | [query.py](src/raglab/query.py), [cache.py](src/raglab/cache.py) |
+| 4. Prefiltered Hybrid RRF | Evaluates metadata predicates before top k truncation across `Qdrant`, `pgvector`, `Chroma`, or `Memory` plus `BM25` | [retrievers.py](src/raglab/retrievers.py), [vectorstore.py](src/raglab/vectorstore.py) |
+| 5. Security sanitization | Strips invisible Unicode smuggling characters and drops or scrubs indirect prompt injection payloads | [security.py](src/raglab/security.py) |
+| 6. Reranking & MMR | Rescores candidates via `CrossTermReranker` or `CohereCompatibleReranker` and suppresses duplicate siblings via `diversify_mmr` | [reranking.py](src/raglab/reranking.py), [rerankers.py](src/raglab/integrations/rerankers.py) |
+| 7. Budgeted prompting & verifier | Packs chunks within `max_context_tokens` and audits `[n]` citation bounds, sentence support, and trap abstention | [prompting.py](src/raglab/prompting.py), [verification.py](src/raglab/verification.py) |
+| 8. Telemetry & HTTP inspector | Exports `JsonlTraceSink` spans and serves `/v1/ask`, `/v1/search`, `/healthz`, and the browser inspector console | [telemetry.py](src/raglab/telemetry.py), [server.py](src/raglab/server.py) |
 
-For full mathematical derivations of TFIDF, Okapi BM25 saturation, Reciprocal Rank Fusion, Maximal Marginal Relevance, and `NDCG@k`, see [docs/how_rag_works.md](docs/how_rag_works.md).
+For full mathematical derivations of TFIDF, Okapi BM25 saturation, Reciprocal Rank Fusion, Maximal Marginal Relevance, and `NDCG@k`, read [docs/how_rag_works.md](docs/how_rag_works.md).
 
 ## 2. Production ecosystem integrations
 
@@ -133,50 +144,65 @@ Activate the virtual environment (`source .venv/bin/activate` on Linux and macOS
 pip install -e ".[dev,qdrant]"
 ```
 
-Run a grounded query using the **Qdrant** backend right from the command line (uses embedded Qdrant by default, or pass `--qdrant-url http://localhost:6333` when running `deploy/compose.yaml`):
+Query the SRE corpus using the **Qdrant** backend, indirect prompt injection sanitizer, semantic cache, and execution trace:
 
 ```bash
 raglab ask "Workers emit SQLSTATE 53300 on Postgres connections. What is the immediate mitigation?" \
   --data projects/incident_copilot/corpus \
   --backend qdrant \
   --filter kind=runbook --filter service=postgres \
-  --markdown --rerank --mmr 0.65 --max-tokens 260 \
+  --markdown --rerank --mmr 0.65 --sanitize --cache --max-tokens 260 \
   --show-trace
 ```
 
-Benchmark all retrievers or spin up the full Docker infrastructure stack (`Qdrant` + `PostgreSQL 16 pgvector` + `Ollama`):
+Launch the interactive **raglab Inspector** web UI and JSON API (`/v1/ask`, `/v1/search`, `/healthz`) on `http://127.0.0.1:8000`:
+
+```bash
+raglab serve --data projects/incident_copilot/corpus --backend qdrant --markdown --rerank --mmr 0.65 --sanitize --cache
+```
+
+Evaluate all retrievers or launch the full Docker stack (`Qdrant` + `PostgreSQL 16 pgvector` + `Ollama`):
 
 ```bash
 raglab evaluate --data projects/incident_copilot/corpus --cases projects/incident_copilot/benchmark.json --markdown --rerank --mmr 0.65
 docker compose -f deploy/compose.yaml up -d
 ```
 
-## 6. Python API and pluggable connectors
+## 6. Python API and production guardrails
 
 ```python
 from raglab import (
     BM25Retriever,
+    ContextSanitizer,
     CrossTermReranker,
     DenseRetriever,
     ExtractiveGenerator,
     HashingEmbedder,
     HybridRetriever,
+    JsonlTraceSink,
+    MultiQueryRetriever,
     RAGPipeline,
+    SemanticCache,
 )
 from raglab.integrations import QdrantVectorStore
 
 qdrant_store = QdrantVectorStore(collection_name="sre_docs", location=":memory:")
-hybrid = HybridRetriever(
-    retrievers=[
-        DenseRetriever(HashingEmbedder(dimensions=512), qdrant_store),
-        BM25Retriever(),
-    ]
+hybrid = MultiQueryRetriever(
+    HybridRetriever(
+        [
+            DenseRetriever(HashingEmbedder(dimensions=512), qdrant_store),
+            BM25Retriever(),
+        ]
+    )
 )
 
 pipeline = RAGPipeline(
     retriever=hybrid,
     generator=ExtractiveGenerator(min_shared_terms=2, min_overlap_ratio=0.34),
     reranker=CrossTermReranker(),
+    sanitizer=ContextSanitizer(drop_suspicious=True),
+    cache=SemanticCache(similarity_threshold=0.90),
+    trace_sink=JsonlTraceSink("traces/audit.jsonl"),
     mmr_lambda=0.65,
     max_context_tokens=260,
     markdown_aware=True,
@@ -189,7 +215,7 @@ answer = pipeline.ask(
     filters={"kind": "architecture"},
 )
 print(answer.text)
-print(answer.grounding.is_verified, answer.trace.total_ms)
+print(answer.grounding.is_verified, answer.trace.cache_hit, answer.trace.total_ms)
 ```
 
 ## 7. Repository structure and documentation map
@@ -200,6 +226,9 @@ raglab/
 │   ├── models.py                Document, Chunk, and SearchResult dataclasses
 │   ├── documents.py             Directory loader with metadata.json manifest support
 │   ├── chunking.py              Sentence and ATX Markdown structure aware chunkers
+│   ├── query.py                 AcronymQueryExpander and MultiQueryRetriever (RRF)
+│   ├── cache.py                 Scope isolated SemanticCache with TTL and eviction
+│   ├── security.py              Unicode smuggling stripper and ContextSanitizer
 │   ├── embeddings.py            HashingEmbedder and TfidfEmbedder
 │   ├── vectorstore.py           VectorStore interface and InMemoryVectorStore
 │   ├── retrievers.py            DenseRetriever, BM25Retriever, and HybridRetriever (RRF)
@@ -207,22 +236,26 @@ raglab/
 │   ├── prompting.py             Token estimator, budget packer, and prompt formatter
 │   ├── generation.py            ExtractiveGenerator and OpenAICompatibleGenerator
 │   ├── verification.py          Citation bounds, claim attribution, and abstention verifier
+│   ├── telemetry.py             TraceEvent, InMemoryTraceSink, and JsonlTraceSink
+│   ├── server.py                ThreadingHTTPServer JSON API and browser Inspector UI
 │   ├── evaluation.py            Hit@k, MRR, NDCG@k, Precision@k, and EndToEndReport
 │   ├── pipeline.py              Instrumented RAGPipeline with PipelineTrace
-│   ├── cli.py                   Command line interface (ask, search, evaluate)
+│   ├── cli.py                   Command line interface (ask, search, evaluate, serve)
 │   └── integrations/            Qdrant, pgvector, Chroma, OpenAI/Ollama embedders, Cohere rerank
 ├── projects/incident_copilot/   Flagship SRE triage copilot, 12 doc corpus, 24 case benchmark
 ├── examples/                    Six progressive runnable scripts (01_quickstart to 06_qdrant_hybrid)
 ├── deploy/compose.yaml          Local Docker stack (Qdrant + PostgreSQL pgvector + Ollama)
 ├── docs/
-│   ├── assets/                  Five deterministic SVG architecture and benchmark charts
+│   ├── assets/                  Mascot emblem plus five deterministic SVG architecture & benchmark charts
 │   ├── how_rag_works.md         Mathematical derivations and failure mode diagnostics
 │   ├── ecosystem_and_tools.md   Deep dive into Qdrant, pgvector, Chroma, Milvus, FAISS, and rerankers
 │   ├── use_cases.md             Domain configurations and RAG anti patterns
 │   ├── architecture_spec.md     System specification and self answered architectural Q and A
 │   └── design_notes.md          Core tradeoffs and design constraints
-├── scripts/                     Commit validator and pure Python SVG chart generator
-└── tests/                       Full unit, integration, Qdrant, CLI, copilot, and SVG test suite
+├── SECURITY.md                  Vulnerability reporting policy and RAG threat model
+├── CODE_OF_CONDUCT.md           Community participation standards
+├── CONTRIBUTING.md              Development setup, testing gate, and commit rules
+└── tests/                       200+ unit, security, server, Qdrant, CLI, copilot, and SVG tests
 ```
 
 ## 8. Verification and engineering standards
@@ -230,10 +263,11 @@ raglab/
 ```bash
 ruff format --check .
 ruff check .
+mypy --strict src/raglab
 pytest --cov
 python scripts/generate_charts.py
 ```
 
-* Strict modular boundaries and complete static type annotations with zero inline comments or docstrings in Python code.
-* Real `QdrantVectorStore` execution verified in CI across Python 3.10, 3.11, 3.12, and 3.13 alongside `PgVectorStore`, `ChromaVectorStore`, neural embedders, and chart synchronization tests.
-* Conventional Commit workflow enforced via `.githooks/commit-msg`. See [CONTRIBUTING.md](CONTRIBUTING.md) and [CHANGELOG.md](CHANGELOG.md).
+* Complete static type safety (`mypy --strict` + PEP 561 `py.typed` marker) and zero inline comments or docstrings across all Python modules.
+* Automated CI gates for `lint`, `typecheck`, `security`, and full `pytest` matrix across Python 3.10, 3.11, 3.12, and 3.13.
+* Conventional Commit workflow enforced via `.githooks/commit-msg`. See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [CHANGELOG.md](CHANGELOG.md).
