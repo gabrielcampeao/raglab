@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import random
 import sys
+import time
 from html import escape
 from pathlib import Path
 from typing import Any
@@ -648,7 +650,7 @@ def render_latency_quality_svg(ablation: dict[str, Any]) -> str:
 
     left, top, bottom, right = 88, 108, 376, 900
     plot_w, plot_h = right - left, bottom - top
-    max_ms = max(max(float(configs[k]["mean_latency_ms"]) for k, _, _ in items) * 1.25, 10.0)
+    max_ms = max(max(float(configs[k]["mean_latency_ms"]) for k, _, _ in items) * 1.35, 4.0)
     min_ver = min(float(configs[k]["verified_rate"]) for k, _, _ in items)
     y_floor = min(0.60, max(0.0, int(min_ver * 10) / 10))
     y_span = 1.05 - y_floor
@@ -686,8 +688,8 @@ def render_latency_quality_svg(ablation: dict[str, Any]) -> str:
     offsets = {
         "bm25": (14, -12),
         "dense": (14, -12),
-        "tfidf": (14, 18),
-        "hybrid_rrf": (-14, 22),
+        "tfidf": (14, -12),
+        "hybrid_rrf": (14, 18),
         "senior_full": (-14, -14),
     }
 
@@ -710,13 +712,158 @@ def render_latency_quality_svg(ablation: dict[str, Any]) -> str:
     return "\n".join(out) + "\n"
 
 
+def run_hnsw_scaling_benchmark(
+    sizes: tuple[int, ...] = (200, 500, 1000, 2000),
+    dim: int = 24,
+    queries: int = 25,
+) -> list[dict[str, float | int]]:
+    from raglab.hnsw import HNSWVectorStore
+    from raglab.models import Chunk
+    from raglab.vectormath import normalize
+    from raglab.vectorstore import InMemoryVectorStore
+
+    rows: list[dict[str, float | int]] = []
+    for count in sizes:
+        rng = random.Random(42 + count)
+        centroids = [normalize([rng.gauss(0.0, 1.0) for _ in range(dim)]) for _ in range(20)]
+        chunks = [
+            Chunk(id=f"vec#{idx}", text=f"v{idx}", document_id=f"d{idx}", position=0)
+            for idx in range(count)
+        ]
+        vectors: list[list[float]] = []
+        for idx in range(count):
+            center = centroids[idx % len(centroids)]
+            vectors.append(normalize([c + rng.gauss(0.0, 0.35) for c in center]))
+        query_vecs = [
+            normalize([c + rng.gauss(0.0, 0.35) for c in centroids[q % len(centroids)]])
+            for q in range(queries)
+        ]
+
+        exact = InMemoryVectorStore()
+        exact.add(chunks, vectors)
+        hnsw = HNSWVectorStore(m=16, ef_construction=48, ef_search=40, seed=42)
+        hnsw.add(chunks, vectors)
+
+        exact_hits: list[set[str]] = []
+        t0 = time.perf_counter()
+        for qvec in query_vecs:
+            exact_hits.append({item.chunk.id for item in exact.search(qvec, k=5)})
+        exact_ms = ((time.perf_counter() - t0) * 1000.0) / queries
+
+        hnsw_hits: list[set[str]] = []
+        t1 = time.perf_counter()
+        for qvec in query_vecs:
+            hnsw_hits.append({item.chunk.id for item in hnsw.search(qvec, k=5)})
+        hnsw_ms = ((time.perf_counter() - t1) * 1000.0) / queries
+
+        recall = (
+            sum(len(left & right) / 5.0 for left, right in zip(exact_hits, hnsw_hits, strict=True))
+            / queries
+        )
+        rows.append(
+            {
+                "corpus_size": count,
+                "exact_ms": round(exact_ms, 3),
+                "hnsw_ms": round(hnsw_ms, 3),
+                "speedup": round(exact_ms / max(hnsw_ms, 1e-6), 2),
+                "recall_at_5": round(recall, 4),
+            }
+        )
+    return rows
+
+
+def render_hnsw_scaling_svg(rows: list[dict[str, float | int]]) -> str:
+    width, height = 960, 460
+    out = _svg_header(width, height, "HNSW approximate search scaling benchmark")
+    out.append(
+        _text(
+            36,
+            42,
+            "HNSW approximate search scaling versus exact cosine scan",
+            size=20,
+            weight="700",
+        )
+    )
+    subtitle = (
+        "24D clustered unit vectors (20 topics), k=5, m=16, "
+        "ef_construction=48, ef_search=40 in pure Python"
+    )
+    out.append(_text(36, 64, subtitle, fill="#94a3b8", size=13))
+
+    legend = [
+        ("Exact scan ms (left axis)", "#f43f5e"),
+        ("HNSW ANN ms (left axis)", "#38bdf8"),
+        ("Recall@5 (right axis)", "#34d399"),
+    ]
+    for idx, (label, color) in enumerate(legend):
+        lx = 398 + idx * 184
+        out.append(f'<circle cx="{lx}" cy="88" r="5" fill="{color}"/>')
+        out.append(_text(lx + 12, 92, label, fill="#cbd5e1", size=12))
+
+    left, top, bottom, right = 82, 118, 386, 874
+    plot_w, plot_h = right - left, bottom - top
+    max_ms = max(max(float(row["exact_ms"]) for row in rows) * 1.18, 1.0)
+
+    for step in range(6):
+        frac = step * 0.2
+        y = bottom - frac * plot_h
+        out.append(
+            f'<line x1="{left}" y1="{y:.1f}" x2="{right}" y2="{y:.1f}" '
+            'stroke="#1e293b" stroke-width="1.2"/>'
+        )
+        out.append(_text(left - 12, y + 4, f"{frac * max_ms:.1f} ms", fill="#94a3b8", anchor="end"))
+        out.append(_text(right + 12, y + 4, f"{frac:.1f}", fill="#34d399"))
+
+    xs = [left + idx * (plot_w / (len(rows) - 1)) for idx in range(len(rows))]
+
+    def draw_line(values: list[float], scale: float, color: str, fmt: str, dy: int) -> None:
+        pts = [(xs[i], bottom - (values[i] / scale) * plot_h) for i in range(len(values))]
+        poly = " ".join(f"{px:.1f},{py:.1f}" for px, py in pts)
+        out.append(f'<polyline points="{poly}" fill="none" stroke="{color}" stroke-width="2.6"/>')
+        for (px, py), raw in zip(pts, values, strict=True):
+            out.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="4.5" fill="{color}"/>')
+            out.append(
+                _text(px, py + dy, fmt.format(raw), fill="#e2e8f0", size=11, anchor="middle")
+            )
+
+    draw_line([float(r["exact_ms"]) for r in rows], max_ms, "#f43f5e", "{:.2f} ms", -10)
+    draw_line([float(r["hnsw_ms"]) for r in rows], max_ms, "#38bdf8", "{:.2f} ms", 18)
+    draw_line([float(r["recall_at_5"]) for r in rows], 1.0, "#34d399", "{:.2f}", -10)
+
+    for idx, row in enumerate(rows):
+        out.append(
+            _text(
+                xs[idx],
+                bottom + 26,
+                f"{row['corpus_size']} vectors",
+                size=12.5,
+                weight="600",
+                anchor="middle",
+            )
+        )
+        out.append(
+            _text(
+                xs[idx],
+                bottom + 44,
+                f"{float(row['speedup']):.1f}x faster",
+                fill="#94a3b8",
+                size=11,
+                anchor="middle",
+            )
+        )
+
+    out.append("</svg>")
+    return "\n".join(out) + "\n"
+
+
 def generate_all(root: Path | None = None) -> dict[str, Any]:
     base = root if root is not None else _project_root()
     from projects.incident_copilot.copilot import run_ablation_suite, run_chunk_sweep
 
     ablation = run_ablation_suite()
     sweep = run_chunk_sweep()
-    payload = {"ablation": ablation, "chunk_sweep": sweep}
+    hnsw_scaling = run_hnsw_scaling_benchmark()
+    payload = {"ablation": ablation, "chunk_sweep": sweep, "hnsw_scaling": hnsw_scaling}
 
     results_path = base / "projects" / "incident_copilot" / "benchmark_results.json"
     results_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
@@ -731,15 +878,21 @@ def generate_all(root: Path | None = None) -> dict[str, Any]:
     (assets / "latency_vs_quality.svg").write_text(
         render_latency_quality_svg(ablation), encoding="utf-8"
     )
+    (assets / "hnsw_scaling_benchmark.svg").write_text(
+        render_hnsw_scaling_svg(hnsw_scaling), encoding="utf-8"
+    )
     return payload
 
 
 def main() -> None:
     payload = generate_all(_project_root())
     senior = payload["ablation"]["configurations"]["senior_full"]
+    largest = payload["hnsw_scaling"][-1]
     print(
-        f"Generated 6 SVG charts and benchmark_results.json "
-        f"(senior_full NDCG@3={senior['ndcg_at_3']:.2f}, verified={senior['verified_rate']:.2f})"
+        f"Generated 7 SVG charts and benchmark_results.json "
+        f"(senior_full NDCG@3={senior['ndcg_at_3']:.2f}, verified={senior['verified_rate']:.2f}, "
+        f"HNSW@{largest['corpus_size']} speedup={largest['speedup']:.2f}x "
+        f"recall@5={largest['recall_at_5']:.2f})"
     )
 
 

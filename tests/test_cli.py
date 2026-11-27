@@ -183,3 +183,31 @@ def test_cli_ask_runs_against_qdrant_backend(capsys: pytest.CaptureFixture[str])
     assert code == 0
     assert "transaction" in output
     assert "postgres_pool_saturation.md" in output
+
+
+def test_cli_ask_runs_against_hnsw_backend(capsys: pytest.CaptureFixture[str]) -> None:
+    corpus = Path(__file__).resolve().parents[1] / "projects" / "incident_copilot" / "corpus"
+    question = (
+        "Workers emit SQLSTATE 53300 on Postgres connections. What is the immediate mitigation?"
+    )
+    code = main(
+        [
+            "ask",
+            question,
+            "--data",
+            str(corpus),
+            "--backend",
+            "hnsw",
+            "--filter",
+            "kind=runbook",
+            "--markdown",
+            "--rerank",
+            "--show-trace",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert code == 0
+    assert "transaction" in output
+    assert "postgres_pool_saturation.md" in output
+    assert "Trace:" in output

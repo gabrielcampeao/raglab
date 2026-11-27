@@ -60,6 +60,9 @@ def test_http_server_serves_health_inspector_search_and_verified_ask() -> None:
             html = ui_resp.read().decode("utf-8")
             assert ui_resp.status == 200
             assert "raglab Inspector" in html
+            assert "retrieval_ms" in html
+            assert "rerank_ms" in html
+            assert "generation_ms" in html
 
         status, search_body = _json_request(
             f"{base}/v1/search",

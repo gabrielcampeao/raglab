@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" width="960" height="460" role="img" aria-label="HNSW approximate search scaling benchmark">
+<defs>
+<linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#0b1120"/>
+<stop offset="100%" stop-color="#111827"/>
+</linearGradient>
+<marker id="arrowCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8"/>
+</marker>
+<marker id="arrowEmerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M 0 1 L 9 5 L 0 9 z" fill="#34d399"/>
+</marker>
+</defs>
+<rect width="960" height="460" rx="16" fill="url(#bgGrad)"/>
+<rect x="1" y="1" width="958" height="458" rx="15" fill="none" stroke="#1e293b" stroke-width="2"/>
+<text x="36.0" y="42.0" text-anchor="start" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="20" font-weight="700">HNSW approximate search scaling versus exact cosine scan</text>
+<text x="36.0" y="64.0" text-anchor="start" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="13" font-weight="400">24D clustered unit vectors (20 topics), k=5, m=16, ef_construction=48, ef_search=40 in pure Python</text>
+<circle cx="398" cy="88" r="5" fill="#f43f5e"/>
+<text x="410.0" y="92.0" text-anchor="start" fill="#cbd5e1" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">Exact scan ms (left axis)</text>
+<circle cx="582" cy="88" r="5" fill="#38bdf8"/>
+<text x="594.0" y="92.0" text-anchor="start" fill="#cbd5e1" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">HNSW ANN ms (left axis)</text>
+<circle cx="766" cy="88" r="5" fill="#34d399"/>
+<text x="778.0" y="92.0" text-anchor="start" fill="#cbd5e1" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">Recall@5 (right axis)</text>
+<line x1="82" y1="386.0" x2="874" y2="386.0" stroke="#1e293b" stroke-width="1.2"/>
+<text x="70.0" y="390.0" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.0 ms</text>
+<text x="886.0" y="390.0" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.0</text>
+<line x1="82" y1="332.4" x2="874" y2="332.4" stroke="#1e293b" stroke-width="1.2"/>
+<text x="70.0" y="336.4" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">1.4 ms</text>
+<text x="886.0" y="336.4" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.2</text>
+<line x1="82" y1="278.8" x2="874" y2="278.8" stroke="#1e293b" stroke-width="1.2"/>
+<text x="70.0" y="282.8" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">2.9 ms</text>
+<text x="886.0" y="282.8" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.4</text>
+<line x1="82" y1="225.2" x2="874" y2="225.2" stroke="#1e293b" stroke-width="1.2"/>
+<text x="70.0" y="229.2" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">4.3 ms</text>
+<text x="886.0" y="229.2" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.6</text>
+<line x1="82" y1="171.6" x2="874" y2="171.6" stroke="#1e293b" stroke-width="1.2"/>
+<text x="70.0" y="175.6" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">5.7 ms</text>
+<text x="886.0" y="175.6" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.8</text>
+<line x1="82" y1="118.0" x2="874" y2="118.0" stroke="#1e293b" stroke-width="1.2"/>
+<text x="70.0" y="122.0" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">7.1 ms</text>
+<text x="886.0" y="122.0" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">1.0</text>
+<polyline points="82.0,364.2 346.0,338.6 610.0,284.4 874.0,158.9" fill="none" stroke="#f43f5e" stroke-width="2.6"/>
+<circle cx="82.0" cy="364.2" r="4.5" fill="#f43f5e"/>
+<text x="82.0" y="354.2" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.58 ms</text>
+<circle cx="346.0" cy="338.6" r="4.5" fill="#f43f5e"/>
+<text x="346.0" y="328.6" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.26 ms</text>
+<circle cx="610.0" cy="284.4" r="4.5" fill="#f43f5e"/>
+<text x="610.0" y="274.4" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">2.70 ms</text>
+<circle cx="874.0" cy="158.9" r="4.5" fill="#f43f5e"/>
+<text x="874.0" y="148.9" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">6.05 ms</text>
+<polyline points="82.0,372.7 346.0,366.6 610.0,362.0 874.0,354.7" fill="none" stroke="#38bdf8" stroke-width="2.6"/>
+<circle cx="82.0" cy="372.7" r="4.5" fill="#38bdf8"/>
+<text x="82.0" y="390.7" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.35 ms</text>
+<circle cx="346.0" cy="366.6" r="4.5" fill="#38bdf8"/>
+<text x="346.0" y="384.6" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.52 ms</text>
+<circle cx="610.0" cy="362.0" r="4.5" fill="#38bdf8"/>
+<text x="610.0" y="380.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.64 ms</text>
+<circle cx="874.0" cy="354.7" r="4.5" fill="#38bdf8"/>
+<text x="874.0" y="372.7" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.83 ms</text>
+<polyline points="82.0,118.0 346.0,118.0 610.0,118.0 874.0,120.1" fill="none" stroke="#34d399" stroke-width="2.6"/>
+<circle cx="82.0" cy="118.0" r="4.5" fill="#34d399"/>
+<text x="82.0" y="108.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.00</text>
+<circle cx="346.0" cy="118.0" r="4.5" fill="#34d399"/>
+<text x="346.0" y="108.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.00</text>
+<circle cx="610.0" cy="118.0" r="4.5" fill="#34d399"/>
+<text x="610.0" y="108.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.00</text>
+<circle cx="874.0" cy="120.1" r="4.5" fill="#34d399"/>
+<text x="874.0" y="110.1" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.99</text>
+<text x="82.0" y="412.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12.5" font-weight="600">200 vectors</text>
+<text x="82.0" y="430.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.6x faster</text>
+<text x="346.0" y="412.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12.5" font-weight="600">500 vectors</text>
+<text x="346.0" y="430.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">2.5x faster</text>
+<text x="610.0" y="412.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12.5" font-weight="600">1000 vectors</text>
+<text x="610.0" y="430.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">4.2x faster</text>
+<text x="874.0" y="412.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12.5" font-weight="600">2000 vectors</text>
+<text x="874.0" y="430.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">7.2x faster</text>
+</svg>

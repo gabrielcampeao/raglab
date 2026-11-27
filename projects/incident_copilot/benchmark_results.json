@@ -16,7 +16,7 @@
         "grounded_ratio": 1.0,
         "verified_rate": 0.875,
         "abstention_accuracy": 0.25,
-        "mean_latency_ms": 4.022,
+        "mean_latency_ms": 0.774,
         "categories_ndcg_at_3": {
           "exact_signal": 1.0,
           "paraphrase": 1.0,
@@ -35,7 +35,7 @@
         "grounded_ratio": 1.0,
         "verified_rate": 0.8333,
         "abstention_accuracy": 0.0,
-        "mean_latency_ms": 16.81,
+        "mean_latency_ms": 2.473,
         "categories_ndcg_at_3": {
           "exact_signal": 1.0,
           "paraphrase": 1.0,
@@ -54,7 +54,7 @@
         "grounded_ratio": 1.0,
         "verified_rate": 0.8333,
         "abstention_accuracy": 0.0,
-        "mean_latency_ms": 0.754,
+        "mean_latency_ms": 0.331,
         "categories_ndcg_at_3": {
           "exact_signal": 1.0,
           "paraphrase": 1.0,
@@ -73,7 +73,7 @@
         "grounded_ratio": 1.0,
         "verified_rate": 0.8333,
         "abstention_accuracy": 0.0,
-        "mean_latency_ms": 24.103,
+        "mean_latency_ms": 2.862,
         "categories_ndcg_at_3": {
           "exact_signal": 1.0,
           "paraphrase": 1.0,
@@ -92,7 +92,7 @@
         "grounded_ratio": 0.95,
         "verified_rate": 0.9583,
         "abstention_accuracy": 1.0,
-        "mean_latency_ms": 18.702,
+        "mean_latency_ms": 3.227,
         "categories_ndcg_at_3": {
           "exact_signal": 1.0,
           "paraphrase": 1.0,
@@ -162,6 +162,36 @@
       "recall_at_3": 1.0,
       "precision_at_3": 0.3833,
       "avg_context_tokens": 465.7
+    }
+  ],
+  "hnsw_scaling": [
+    {
+      "corpus_size": 200,
+      "exact_ms": 0.581,
+      "hnsw_ms": 0.355,
+      "speedup": 1.64,
+      "recall_at_5": 1.0
+    },
+    {
+      "corpus_size": 500,
+      "exact_ms": 1.263,
+      "hnsw_ms": 0.516,
+      "speedup": 2.45,
+      "recall_at_5": 1.0
+    },
+    {
+      "corpus_size": 1000,
+      "exact_ms": 2.704,
+      "hnsw_ms": 0.64,
+      "speedup": 4.23,
+      "recall_at_5": 1.0
+    },
+    {
+      "corpus_size": 2000,
+      "exact_ms": 6.047,
+      "hnsw_ms": 0.834,
+      "speedup": 7.25,
+      "recall_at_5": 0.992
     }
   ]
 }

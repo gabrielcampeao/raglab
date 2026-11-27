@@ -14,6 +14,7 @@ EXPECTED_SVGS = (
     "retrieval_ablation.svg",
     "chunk_size_tradeoff.svg",
     "latency_vs_quality.svg",
+    "hnsw_scaling_benchmark.svg",
 )
 
 
@@ -22,6 +23,8 @@ def test_benchmark_results_json_exists_and_has_ablation_and_sweep() -> None:
     payload = json.loads(RESULTS_PATH.read_text(encoding="utf-8"))
     assert "ablation" in payload
     assert "chunk_sweep" in payload
+    assert "hnsw_scaling" in payload
+    assert len(payload["hnsw_scaling"]) >= 4
     assert "senior_full" in payload["ablation"]["configurations"]
 
 
@@ -43,6 +46,7 @@ def test_svg_charts_match_generator_output_and_live_ablation_metrics() -> None:
         render_architecture_svg,
         render_chunk_sweep_svg,
         render_ecosystem_svg,
+        render_hnsw_scaling_svg,
         render_latency_quality_svg,
         render_taxonomy_svg,
     )
@@ -66,6 +70,9 @@ def test_svg_charts_match_generator_output_and_live_ablation_metrics() -> None:
     assert (ASSETS_DIR / "latency_vs_quality.svg").read_text(
         encoding="utf-8"
     ) == render_latency_quality_svg(payload["ablation"])
+    assert (ASSETS_DIR / "hnsw_scaling_benchmark.svg").read_text(
+        encoding="utf-8"
+    ) == render_hnsw_scaling_svg(payload["hnsw_scaling"])
 
     live = run_ablation_suite()["configurations"]["senior_full"]
     recorded = payload["ablation"]["configurations"]["senior_full"]

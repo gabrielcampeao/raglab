@@ -6,12 +6,12 @@ import random
 from collections.abc import Iterable, Mapping, Sequence
 
 from raglab.models import Chunk, SearchResult
-from raglab.vectormath import Vector, norm, normalize
+from raglab.vectormath import Vector, _fast_dot, norm, normalize
 from raglab.vectorstore import VectorStore, _matches_metadata
 
 
 def _cosine_distance(first: Sequence[float], second: Sequence[float]) -> float:
-    dot_product = sum(x * y for x, y in zip(first, second, strict=True))
+    dot_product = _fast_dot(first, second)
     return 1.0 - max(-1.0, min(1.0, dot_product))
 
 
@@ -149,14 +149,15 @@ class HNSWVectorStore(VectorStore):
             self._neighbors[node_id][layer] = list(chosen)
             for peer in chosen:
                 peer_links = self._neighbors[peer][layer]
-                peer_links.append(node_id)
+                if node_id not in peer_links:
+                    peer_links.append(node_id)
                 if len(peer_links) > max_conn:
                     peer_vec = self._vectors[peer]
                     scored = sorted(
                         (_cosine_distance(peer_vec, self._vectors[other]), other)
                         for other in peer_links
                     )
-                    self._neighbors[peer][layer] = self._select_neighbors(scored, max_conn)
+                    self._neighbors[peer][layer] = [other for _, other in scored[:max_conn]]
 
         if level > self._max_level:
             self._entry_point = node_id

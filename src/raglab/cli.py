@@ -15,6 +15,7 @@ from raglab.generation import (
     Generator,
     OpenAICompatibleGenerator,
 )
+from raglab.hnsw import HNSWVectorStore
 from raglab.integrations.qdrant import QdrantVectorStore
 from raglab.models import Document
 from raglab.pipeline import RAGPipeline
@@ -52,7 +53,7 @@ def _add_ranking_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--retriever", choices=RETRIEVER_NAMES, default="hybrid")
     parser.add_argument(
         "--backend",
-        choices=("memory", "qdrant"),
+        choices=("memory", "hnsw", "qdrant"),
         default="memory",
         help="vector store backend used by dense and hybrid retrievers",
     )
@@ -198,6 +199,9 @@ def _select_retriever(name: str, args: argparse.Namespace) -> Retriever:
         store = QdrantVectorStore(url=qdrant_url)
         dense = DenseRetriever(HashingEmbedder(), store)
         base: Retriever = dense if name == "dense" else HybridRetriever([dense, BM25Retriever()])
+    elif backend == "hnsw" and name in ("dense", "hybrid"):
+        dense = DenseRetriever(HashingEmbedder(), HNSWVectorStore())
+        base = dense if name == "dense" else HybridRetriever([dense, BM25Retriever()])
     else:
         base = create_retriever(name)
     if getattr(args, "expand_queries", False):
