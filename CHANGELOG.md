@@ -2,6 +2,16 @@
 
 Notable changes to `raglab` follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] November 27, 2026
+
+### Added
+
+* `ParentChildRetriever` and `build_parent_child_chunks` (`src/raglab/parent_child.py`) decoupling fine grained child search (`180` chars) from full parent section context (`750` chars).
+* `SubQuestionDecomposer` with round robin interleave fusion, `decompose_query`, and `HyDERetriever` in `src/raglab/query.py`.
+* `reorder_lost_in_middle` in `src/raglab/prompting.py` and `reorder_context=True` on `RAGPipeline`.
+* `ConversationalRAG` and `condense_follow_up` (`src/raglab/conversation.py`) resolving multi turn pronouns against prior turn section anchors.
+* Runnable script `examples/07_advanced_patterns.py`, `docs/assets/advanced_rag_taxonomy.svg`, and two research study guides (`docs/advanced_rag_patterns.md` and `docs/evaluation_and_failure_taxonomy.md`).
+
 ## [0.4.0] November 27, 2026
 
 ### Added
@@ -12,7 +22,7 @@ Notable changes to `raglab` follow [Keep a Changelog](https://keepachangelog.com
 * Structured telemetry sinks (`TraceEvent`, `InMemoryTraceSink`, `JsonlTraceSink`) in `src/raglab/telemetry.py`.
 * Zero dependency HTTP API and browser `raglab Inspector` (`src/raglab/server.py` and `raglab serve`) serving `/healthz`, `/v1/search`, `/v1/ask`, and `/` UI.
 * PEP 561 `py.typed` marker, `mypy --strict` static type checking, and dedicated `typecheck` and `security` GitHub Actions jobs.
-* Repository governance files (`SECURITY.md`, `CODE_OF_CONDUCT.md`, GitHub issue templates, Dependabot configuration) and centered hero header with geometric SVG brand mark.
+* Repository governance files (`SECURITY.md`, `CODE_OF_CONDUCT.md`, GitHub issue templates) and centered hero header with geometric SVG brand mark.
 
 ## [0.3.0] November 26, 2026
 

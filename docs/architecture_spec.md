@@ -1,4 +1,4 @@
-# Architecture specification for raglab 0.2
+# Architecture specification for raglab
 
 ## Intent and positioning
 
@@ -98,3 +98,14 @@ A pure Python SVG renderer in `scripts/generate_charts.py` executes the benchmar
   * `retrieval_ablation.svg`
   * `chunk_size_tradeoff.svg`
   * `latency_vs_quality.svg`
+
+
+## Version 0.5 gap analysis: advanced RAG patterns and research studies
+
+### 10. What retrieval and context patterns still separate modular RAG from complete production architectures?
+
+* **Small to Big (`ParentChildRetriever` in `src/raglab/parent_child.py`):** Indexing fine grained child chunks (`~180` characters) maximizes lexical and vector specificity, while returning deduplicated parent sections (`~750` characters) supplies complete procedural context to the generator.
+* **Sub question decomposition and HyDE (`SubQuestionDecomposer` and `HyDERetriever` in `src/raglab/query.py`):** Compound prompts spanning two distinct operational topics starve one topic unless decomposed into sub queries prior to round robin interleaving. `HyDERetriever` bridges query versus document phrasing asymmetry by fusing retrieval over a generated hypothetical answer draft with the raw query.
+* **Lost in the Middle context ordering (`reorder_lost_in_middle` in `src/raglab/prompting.py`):** Transformer attention exhibits a U shaped primacy and recency bias across long contexts (Liu et al., 2024). Placing top ranked chunks at the start and end of the context block prevents rank 2 evidence from being buried in the middle.
+* **Multi turn coreference condensation (`ConversationalRAG` in `src/raglab/conversation.py`):** Follow up questions containing pronouns (`it`, `that`, `those`) lose retrieval recall unless anchored with salient entities from recent turns before querying the index.
+* **Research study guides (`docs/advanced_rag_patterns.md` and `docs/evaluation_and_failure_taxonomy.md`):** Document the mathematical foundations, architectural taxonomy (`docs/assets/advanced_rag_taxonomy.svg`), RAG Triad metrics, calibration matrices, and failure root cause playbooks.

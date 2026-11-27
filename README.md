@@ -3,7 +3,7 @@
   <h1>Raglab</h1>
   <p><strong>Modular two stage Retrieval Augmented Generation, hybrid search, and grounding verification for Python.</strong></p>
   <p>
-    <a href="https://github.com/gabrielcampeao/raglab/releases/tag/v0.4.0"><img src="https://img.shields.io/badge/release-v0.4.0-0969da?style=flat" alt="Release v0.4.0" /></a>
+    <a href="https://github.com/gabrielcampeao/raglab/releases/tag/v0.5.0"><img src="https://img.shields.io/badge/release-v0.5.0-0969da?style=flat" alt="Release v0.5.0" /></a>
     <a href="https://github.com/gabrielcampeao/raglab/actions/workflows/ci.yml"><img src="https://img.shields.io/badge/ci%20workflow-passing-2da44e?style=flat&logo=github" alt="CI workflow passing" /></a>
     <a href="SECURITY.md"><img src="https://img.shields.io/badge/security%20audit-passing-2da44e?style=flat&logo=github" alt="Security audit passing" /></a>
     <a href="pyproject.toml"><img src="https://img.shields.io/badge/mypy-strict-0969da?style=flat" alt="mypy strict" /></a>
@@ -14,7 +14,7 @@
     <a href="SECURITY.md">Security</a> ·
     <a href="#1-two-stage-rag-architecture">Architecture</a> ·
     <a href="#3-empirical-benchmarks-and-ablation-charts">Benchmarks</a> ·
-    <a href="docs/ecosystem_and_tools.md">Ecosystem</a> ·
+    <a href="docs/advanced_rag_patterns.md">Studies</a> ·
     <a href="CONTRIBUTING.md">Contributing</a>
   </p>
 </div>
@@ -36,15 +36,17 @@ A reliable RAG pipeline separates candidate recall from top k precision and trea
 | Stage | Responsibility | Core module |
 | --- | --- | --- |
 | 1. Document ingestion | Loads `.md` and `.txt` corpora and merges optional `metadata.json` facets (`kind`, `service`) | [documents.py](src/raglab/documents.py) |
-| 2. Markdown chunking | Tracks ATX heading stacks into `metadata["section"]` breadcrumbs and keeps fenced SQL or code blocks intact | [chunking.py](src/raglab/chunking.py) |
-| 3. Query expansion & cache | Expands operational acronyms (`MultiQueryRetriever`) and serves filter isolated hits from `SemanticCache` | [query.py](src/raglab/query.py), [cache.py](src/raglab/cache.py) |
+| 2. Markdown & hierarchy | Tracks ATX heading breadcrumbs (`chunking.py`) and decouples search vs context windows via `ParentChildRetriever` | [chunking.py](src/raglab/chunking.py), [parent_child.py](src/raglab/parent_child.py) |
+| 3. Query transforms & cache | Supports acronym RRF, compound `SubQuestionDecomposer`, `HyDERetriever`, multi turn `ConversationalRAG`, and `SemanticCache` | [query.py](src/raglab/query.py), [conversation.py](src/raglab/conversation.py), [cache.py](src/raglab/cache.py) |
 | 4. Prefiltered Hybrid RRF | Evaluates metadata predicates before top k truncation across `Qdrant`, `pgvector`, `Chroma`, or `Memory` plus `BM25` | [retrievers.py](src/raglab/retrievers.py), [vectorstore.py](src/raglab/vectorstore.py) |
 | 5. Security sanitization | Strips invisible Unicode smuggling characters and drops or scrubs indirect prompt injection payloads | [security.py](src/raglab/security.py) |
 | 6. Reranking & MMR | Rescores candidates via `CrossTermReranker` or `CohereCompatibleReranker` and suppresses duplicate siblings via `diversify_mmr` | [reranking.py](src/raglab/reranking.py), [rerankers.py](src/raglab/integrations/rerankers.py) |
-| 7. Budgeted prompting & verifier | Packs chunks within `max_context_tokens` and audits `[n]` citation bounds, sentence support, and trap abstention | [prompting.py](src/raglab/prompting.py), [verification.py](src/raglab/verification.py) |
+| 7. Budgeted prompting & verifier | Packs chunks within `max_context_tokens`, applies `reorder_lost_in_middle`, and audits `[n]` citation bounds and abstention | [prompting.py](src/raglab/prompting.py), [verification.py](src/raglab/verification.py) |
 | 8. Telemetry & HTTP inspector | Exports `JsonlTraceSink` spans and serves `/v1/ask`, `/v1/search`, `/healthz`, and the browser inspector console | [telemetry.py](src/raglab/telemetry.py), [server.py](src/raglab/server.py) |
 
-For full mathematical derivations of TFIDF, Okapi BM25 saturation, Reciprocal Rank Fusion, Maximal Marginal Relevance, and `NDCG@k`, read [docs/how_rag_works.md](docs/how_rag_works.md).
+For mathematical derivations and research studies, read [docs/how_rag_works.md](docs/how_rag_works.md), [docs/advanced_rag_patterns.md](docs/advanced_rag_patterns.md), and [docs/evaluation_and_failure_taxonomy.md](docs/evaluation_and_failure_taxonomy.md).
+
+![Evolution of RAG paradigms](docs/assets/advanced_rag_taxonomy.svg)
 
 ## 2. Production ecosystem integrations
 
@@ -221,7 +223,9 @@ raglab/
 │   ├── models.py                Document, Chunk, and SearchResult dataclasses
 │   ├── documents.py             Directory loader with metadata.json manifest support
 │   ├── chunking.py              Sentence and ATX Markdown structure aware chunkers
-│   ├── query.py                 AcronymQueryExpander and MultiQueryRetriever (RRF)
+│   ├── parent_child.py          Small to big ParentChildRetriever hierarchy
+│   ├── query.py                 Acronym RRF, SubQuestionDecomposer, and HyDERetriever
+│   ├── conversation.py          Multi turn coreference condenser and ConversationalRAG
 │   ├── cache.py                 Scope isolated SemanticCache with TTL and eviction
 │   ├── security.py              Unicode smuggling stripper and ContextSanitizer
 │   ├── embeddings.py            HashingEmbedder and TfidfEmbedder
@@ -238,11 +242,13 @@ raglab/
 │   ├── cli.py                   Command line interface (ask, search, evaluate, serve)
 │   └── integrations/            Qdrant, pgvector, Chroma, OpenAI/Ollama embedders, Cohere rerank
 ├── projects/incident_copilot/   Flagship SRE triage copilot, 12 doc corpus, 24 case benchmark
-├── examples/                    Six progressive runnable scripts (01_quickstart to 06_qdrant_hybrid)
+├── examples/                    Seven progressive runnable scripts (01_quickstart to 07_advanced_patterns)
 ├── deploy/compose.yaml          Local Docker stack (Qdrant + PostgreSQL pgvector + Ollama)
 ├── docs/
-│   ├── assets/                  Geometric SVG brand mark plus five deterministic benchmark charts
-│   ├── how_rag_works.md         Mathematical derivations and failure mode diagnostics
+│   ├── assets/                  Geometric SVG brand mark plus six deterministic architecture & benchmark charts
+│   ├── how_rag_works.md         Core mathematical derivations (TFIDF, BM25, RRF, MMR)
+│   ├── advanced_rag_patterns.md Study of Small to Big, Decomposition, HyDE, Lost in the Middle, CRAG, and GraphRAG
+│   ├── evaluation_and_failure_taxonomy.md  Worked NDCG math, the RAG Triad, calibration matrix, and 10 failure modes
 │   ├── ecosystem_and_tools.md   Deep dive into Qdrant, pgvector, Chroma, Milvus, FAISS, and rerankers
 │   ├── use_cases.md             Domain configurations and RAG anti patterns
 │   ├── architecture_spec.md     System specification and self answered architectural Q and A
