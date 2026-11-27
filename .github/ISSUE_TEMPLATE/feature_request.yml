@@ -1,0 +1,19 @@
+name: Feature request
+description: Propose a new retrieval algorithm, connector, or evaluation metric
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: Which RAG failure mode or operational workload does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed interface and behavior
+      description: Sketch the expected Python signature or CLI flags.
+    validations:
+      required: true

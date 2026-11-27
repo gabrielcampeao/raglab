@@ -1,0 +1,27 @@
+name: Bug report
+description: Report a reproducible defect in raglab or its integrations
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Defect summary
+      description: State what happened versus what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Paste a self contained Python snippet or raglab CLI command.
+      render: python
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Python and OS version
+      placeholder: Python 3.12 on Ubuntu 24.04
+    validations:
+      required: true
