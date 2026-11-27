@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
+from raglab.cache import SemanticCache
 from raglab.chunking import chunk_documents, chunk_markdown_documents
 from raglab.documents import load_directory
 from raglab.generation import ExtractiveGenerator, Generator
@@ -18,6 +19,8 @@ from raglab.prompting import (
 )
 from raglab.reranking import Reranker, diversify_mmr
 from raglab.retrievers import HybridRetriever, MetadataFilter, Retriever
+from raglab.security import ContextSanitizer
+from raglab.telemetry import TraceSink, build_trace_event
 from raglab.verification import GroundingReport, verify_answer
 
 
@@ -30,6 +33,7 @@ class PipelineTrace:
     candidates_retrieved: int
     candidates_selected: int
     context_tokens: int
+    cache_hit: bool = False
 
 
 @dataclass(frozen=True)
@@ -49,6 +53,9 @@ class RAGPipeline:
         generator: Generator | None = None,
         *,
         reranker: Reranker | None = None,
+        sanitizer: ContextSanitizer | None = None,
+        cache: SemanticCache | None = None,
+        trace_sink: TraceSink | None = None,
         candidate_pool: int = 15,
         mmr_lambda: float | None = None,
         max_context_tokens: int | None = None,
@@ -73,6 +80,9 @@ class RAGPipeline:
         self.retriever = retriever if retriever is not None else HybridRetriever()
         self.generator = generator if generator is not None else ExtractiveGenerator()
         self.reranker = reranker
+        self.sanitizer = sanitizer
+        self.cache = cache
+        self.trace_sink = trace_sink
         self.candidate_pool = candidate_pool
         self.mmr_lambda = mmr_lambda
         self.max_context_tokens = max_context_tokens
@@ -88,10 +98,17 @@ class RAGPipeline:
         return tuple(self._chunks)
 
     def ingest(self, documents: Iterable[Document]) -> int:
+        cleaned_docs = (
+            [self.sanitizer.clean_document(doc) for doc in documents]
+            if self.sanitizer is not None
+            else list(documents)
+        )
         chunker = chunk_markdown_documents if self.markdown_aware else chunk_documents
-        new_chunks = chunker(documents, self.max_chars, self.overlap)
+        new_chunks = chunker(cleaned_docs, self.max_chars, self.overlap)
         self._chunks.extend(new_chunks)
         self.retriever.index(self._chunks)
+        if self.cache is not None:
+            self.cache.clear()
         return len(new_chunks)
 
     def ingest_directory(self, path: str | Path) -> int:
@@ -111,7 +128,9 @@ class RAGPipeline:
         limit = self.top_k if k is None else k
         if limit <= 0:
             raise ValueError("k must be positive")
-        uses_post_stage = self.reranker is not None or self.mmr_lambda is not None
+        uses_post_stage = (
+            self.reranker is not None or self.mmr_lambda is not None or self.sanitizer is not None
+        )
         pool = max(limit, self.candidate_pool) if uses_post_stage else limit
 
         start_retrieval = time.perf_counter()
@@ -123,7 +142,11 @@ class RAGPipeline:
         retrieval_ms = (time.perf_counter() - start_retrieval) * 1000.0
 
         start_rerank = time.perf_counter()
-        selected = list(raw_results)
+        selected = (
+            self.sanitizer.sanitize_results(raw_results)
+            if self.sanitizer is not None
+            else list(raw_results)
+        )
         if self.reranker is not None and selected:
             rerank_limit = None if self.mmr_lambda is not None else limit
             selected = self.reranker.rerank(question, selected, k=rerank_limit)
@@ -152,14 +175,30 @@ class RAGPipeline:
         *,
         filters: MetadataFilter | None = None,
     ) -> Answer:
+        if not question.strip():
+            raise ValueError("The question must not be empty")
+        if not self._chunks:
+            raise RuntimeError("Ingest documents before asking questions")
+        limit = self.top_k if k is None else k
+        if limit <= 0:
+            raise ValueError("k must be positive")
+
+        if self.cache is not None and k is None:
+            cached = self.cache.lookup(question, filters=filters)
+            if cached is not None:
+                if self.trace_sink is not None:
+                    self.trace_sink.record(build_trace_event(cached, filters))
+                return cached
+
         ask_start = time.perf_counter()
         selected, retrieval_ms, rerank_ms, raw_count = self._select_candidates(
             question, k, filters=filters
         )
         if self.max_context_tokens is not None and selected:
             selected = pack_context(selected, self.max_context_tokens)
+        formatted_context = format_context(selected)
         prompt = build_prompt(question, selected, self.template)
-        context_tokens = estimate_tokens(format_context(selected)) if selected else 0
+        context_tokens = estimate_tokens(formatted_context) if selected else 0
 
         start_generation = time.perf_counter()
         text = self.generator.generate(question, prompt, selected)
@@ -175,8 +214,9 @@ class RAGPipeline:
             candidates_retrieved=raw_count,
             candidates_selected=len(selected),
             context_tokens=context_tokens,
+            cache_hit=False,
         )
-        return Answer(
+        answer = Answer(
             question=question,
             text=text,
             sources=tuple(selected),
@@ -184,3 +224,8 @@ class RAGPipeline:
             grounding=grounding,
             trace=trace,
         )
+        if self.cache is not None and k is None:
+            self.cache.store(question, answer, filters=filters)
+        if self.trace_sink is not None:
+            self.trace_sink.record(build_trace_event(answer, filters))
+        return answer

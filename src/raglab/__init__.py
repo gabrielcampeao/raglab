@@ -1,3 +1,4 @@
+from raglab.cache import SemanticCache
 from raglab.chunking import (
     MarkdownSection,
     chunk_documents,
@@ -34,6 +35,7 @@ from raglab.prompting import (
     format_context,
     pack_context,
 )
+from raglab.query import AcronymQueryExpander, MultiQueryRetriever, QueryExpander
 from raglab.reranking import CrossTermReranker, Reranker, diversify_mmr
 from raglab.retrievers import (
     RETRIEVER_NAMES,
@@ -45,18 +47,22 @@ from raglab.retrievers import (
     create_retriever,
     matches_filters,
 )
+from raglab.security import ContextSanitizer, SecurityFinding, strip_invisible_characters
+from raglab.telemetry import InMemoryTraceSink, JsonlTraceSink, TraceEvent, TraceSink
 from raglab.vectorstore import InMemoryVectorStore, VectorStore
 from raglab.verification import GroundingReport, verify_answer
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "DEFAULT_TEMPLATE",
     "NO_ANSWER",
     "RETRIEVER_NAMES",
+    "AcronymQueryExpander",
     "Answer",
     "BM25Retriever",
     "Chunk",
+    "ContextSanitizer",
     "CrossTermReranker",
     "DenseRetriever",
     "Document",
@@ -69,17 +75,25 @@ __all__ = [
     "GroundingReport",
     "HashingEmbedder",
     "HybridRetriever",
+    "InMemoryTraceSink",
     "InMemoryVectorStore",
+    "JsonlTraceSink",
     "MarkdownSection",
     "MetadataFilter",
+    "MultiQueryRetriever",
     "OpenAICompatibleGenerator",
     "PipelineTrace",
+    "QueryExpander",
     "RAGPipeline",
     "Reranker",
     "RetrievalReport",
     "Retriever",
     "SearchResult",
+    "SecurityFinding",
+    "SemanticCache",
     "TfidfEmbedder",
+    "TraceEvent",
+    "TraceSink",
     "VectorStore",
     "__version__",
     "build_prompt",
@@ -100,5 +114,6 @@ __all__ = [
     "pack_context",
     "split_markdown_sections",
     "split_sentences",
+    "strip_invisible_characters",
     "verify_answer",
 ]
