@@ -199,6 +199,7 @@ class RAGPipeline:
         *,
         filters: MetadataFilter | None = None,
         retrieval_query: str | None = None,
+        use_cache: bool = True,
     ) -> Answer:
         if not question.strip():
             raise ValueError("The question must not be empty")
@@ -209,7 +210,7 @@ class RAGPipeline:
             raise ValueError("k must be positive")
 
         probe = retrieval_query if retrieval_query is not None else question
-        if self.cache is not None and k is None:
+        if use_cache and self.cache is not None and k is None:
             cached = self.cache.lookup(probe, filters=filters)
             if cached is not None:
                 if self.trace_sink is not None:
@@ -254,7 +255,7 @@ class RAGPipeline:
             grounding=grounding,
             trace=trace,
         )
-        if self.cache is not None and k is None:
+        if use_cache and self.cache is not None and k is None:
             self.cache.store(probe, answer, filters=filters)
         if self.trace_sink is not None:
             self.trace_sink.record(build_trace_event(answer, filters))

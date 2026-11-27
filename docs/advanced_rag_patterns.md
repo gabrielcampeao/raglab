@@ -91,6 +91,7 @@ from raglab import (
     CrossTermReranker,
     DenseRetriever,
     EntityGraphRetriever,
+    ExtractiveGenerator,
     HashingEmbedder,
     HNSWVectorStore,
     RAGPipeline,
@@ -98,6 +99,7 @@ from raglab import (
 
 pipeline = RAGPipeline(
     retriever=DenseRetriever(HashingEmbedder(dimensions=256), HNSWVectorStore()),
+    generator=ExtractiveGenerator(min_shared_terms=2, min_overlap_ratio=0.34),
     reranker=CrossTermReranker(),
     markdown_aware=True,
     max_chars=340,

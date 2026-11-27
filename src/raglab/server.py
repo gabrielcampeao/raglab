@@ -74,20 +74,27 @@ INSPECTOR_HTML = "\n".join(
         "    }",
         "  }",
         "  const payload = {question, filters: Object.keys(filters).length ? filters : null};",
-        '  const res = await fetch("/v1/ask", {',
-        '    method: "POST",',
-        '    headers: {"Content-Type": "application/json"},',
-        "    body: JSON.stringify(payload)",
-        "  });",
-        "  const data = await res.json();",
         '  const out = document.getElementById("out");',
         '  out.style.display = "block";',
+        "  let res, data;",
+        "  try {",
+        '    res = await fetch("/v1/ask", {',
+        '      method: "POST",',
+        '      headers: {"Content-Type": "application/json"},',
+        "      body: JSON.stringify(payload)",
+        "    });",
+        "    data = await res.json();",
+        "  } catch {",
+        '    out.textContent = "Request failed";',
+        "    return;",
+        "  }",
         '  if (!res.ok) { out.textContent = data.error || "Request failed"; return; }',
         '  const cls = data.grounding.verified ? "ok" : "warn";',
         '  const lbl = data.grounding.abstained ? "abstained"',
         '    : (data.grounding.verified ? "verified" : "unverified");',
-        "  const esc = (s) => String(s).replace(/[&<>]/g, (c) =>",
-        '    ({"&": "&amp;", "<": "&lt;", ">": "&gt;"}[c]));',
+        "  const escMap = {'&': '&amp;', '<': '&lt;', '>': '&gt;',",
+        "    '\"': '&quot;', \"'\": '&#39;'};",
+        "  const esc = (s) => String(s).replace(/[&<>\"']/g, (c) => escMap[c]);",
         "  const t = data.trace;",
         '  let html = `<div><span class="badge ${cls}">${lbl}</span></div>`;',
         '  html += `<p style="line-height:1.55">${esc(data.answer)}</p>`;',
@@ -117,7 +124,27 @@ def _parse_filters(raw: Any) -> dict[str, str] | None:
         return None
     if not isinstance(raw, dict):
         raise ValueError("'filters' must be a JSON object")
-    return {str(key): str(val) for key, val in raw.items()}
+    parsed: dict[str, str] = {}
+    for key, val in raw.items():
+        if not isinstance(key, str) or not isinstance(val, str):
+            raise ValueError("'filters' keys and values must be strings")
+        parsed[key] = val
+    return parsed
+
+
+def _parse_k(raw: Any) -> int | None:
+    if raw is None:
+        return None
+    if isinstance(raw, bool) or not isinstance(raw, int):
+        raise ValueError("'k' must be an integer")
+    return raw
+
+
+def _require_text(body: dict[str, Any], field: str) -> str:
+    value = body.get(field)
+    if not isinstance(value, str):
+        raise ValueError(f"'{field}' must be a string")
+    return value
 
 
 def create_server(
@@ -168,14 +195,16 @@ def create_server(
             self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
 
         def do_POST(self) -> None:
+            if self.path not in ("/v1/search", "/v1/ask"):
+                self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
+                return
             try:
                 body = self._read_json()
                 filters = _parse_filters(body.get("filters"))
-                raw_k = body.get("k")
-                k_val = int(raw_k) if raw_k is not None else None
+                k_val = _parse_k(body.get("k"))
 
                 if self.path == "/v1/search":
-                    query = str(body.get("query", ""))
+                    query = _require_text(body, "query")
                     with lock:
                         results = pipeline.retrieve(query, k=k_val, filters=filters)
                     self._send_json(
@@ -195,36 +224,32 @@ def create_server(
                     )
                     return
 
-                if self.path == "/v1/ask":
-                    question = str(body.get("question", ""))
-                    with lock:
-                        answer = pipeline.ask(question, k=k_val, filters=filters)
-                    self._send_json(
-                        HTTPStatus.OK,
-                        {
-                            "question": answer.question,
-                            "answer": answer.text,
-                            "grounding": {
-                                **asdict(answer.grounding),
-                                "verified": answer.grounding.is_verified,
-                            },
-                            "trace": asdict(answer.trace),
-                            "sources": [
-                                {
-                                    "chunk_id": item.chunk.id,
-                                    "source": item.chunk.source,
-                                    "section": item.chunk.metadata.get("section", ""),
-                                    "score": round(item.score, 6),
-                                    "text": item.chunk.text,
-                                }
-                                for item in answer.sources
-                            ],
+                question = _require_text(body, "question")
+                with lock:
+                    answer = pipeline.ask(question, k=k_val, filters=filters)
+                self._send_json(
+                    HTTPStatus.OK,
+                    {
+                        "question": answer.question,
+                        "answer": answer.text,
+                        "grounding": {
+                            **asdict(answer.grounding),
+                            "verified": answer.grounding.is_verified,
                         },
-                    )
-                    return
-
-                self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
-            except (ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
+                        "trace": asdict(answer.trace),
+                        "sources": [
+                            {
+                                "chunk_id": item.chunk.id,
+                                "source": item.chunk.source,
+                                "section": item.chunk.metadata.get("section", ""),
+                                "score": round(item.score, 6),
+                                "text": item.chunk.text,
+                            }
+                            for item in answer.sources
+                        ],
+                    },
+                )
+            except (ValueError, KeyError, TypeError, RuntimeError, json.JSONDecodeError) as error:
                 self._send_json(HTTPStatus.BAD_REQUEST, {"error": str(error)})
             except GenerationError as error:
                 self._send_json(HTTPStatus.BAD_GATEWAY, {"error": str(error)})

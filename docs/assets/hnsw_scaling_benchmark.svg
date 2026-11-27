@@ -25,53 +25,53 @@
 <text x="70.0" y="390.0" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.0 ms</text>
 <text x="886.0" y="390.0" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.0</text>
 <line x1="82" y1="332.4" x2="874" y2="332.4" stroke="#1e293b" stroke-width="1.2"/>
-<text x="70.0" y="336.4" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">1.4 ms</text>
+<text x="70.0" y="336.4" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">2.8 ms</text>
 <text x="886.0" y="336.4" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.2</text>
 <line x1="82" y1="278.8" x2="874" y2="278.8" stroke="#1e293b" stroke-width="1.2"/>
-<text x="70.0" y="282.8" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">2.9 ms</text>
+<text x="70.0" y="282.8" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">5.5 ms</text>
 <text x="886.0" y="282.8" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.4</text>
 <line x1="82" y1="225.2" x2="874" y2="225.2" stroke="#1e293b" stroke-width="1.2"/>
-<text x="70.0" y="229.2" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">4.3 ms</text>
+<text x="70.0" y="229.2" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">8.3 ms</text>
 <text x="886.0" y="229.2" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.6</text>
 <line x1="82" y1="171.6" x2="874" y2="171.6" stroke="#1e293b" stroke-width="1.2"/>
-<text x="70.0" y="175.6" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">5.7 ms</text>
+<text x="70.0" y="175.6" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">11.0 ms</text>
 <text x="886.0" y="175.6" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">0.8</text>
 <line x1="82" y1="118.0" x2="874" y2="118.0" stroke="#1e293b" stroke-width="1.2"/>
-<text x="70.0" y="122.0" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">7.1 ms</text>
+<text x="70.0" y="122.0" text-anchor="end" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">13.8 ms</text>
 <text x="886.0" y="122.0" text-anchor="start" fill="#34d399" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12" font-weight="400">1.0</text>
-<polyline points="82.0,364.2 346.0,338.6 610.0,284.4 874.0,158.9" fill="none" stroke="#f43f5e" stroke-width="2.6"/>
-<circle cx="82.0" cy="364.2" r="4.5" fill="#f43f5e"/>
-<text x="82.0" y="354.2" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.58 ms</text>
-<circle cx="346.0" cy="338.6" r="4.5" fill="#f43f5e"/>
-<text x="346.0" y="328.6" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.26 ms</text>
-<circle cx="610.0" cy="284.4" r="4.5" fill="#f43f5e"/>
-<text x="610.0" y="274.4" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">2.70 ms</text>
-<circle cx="874.0" cy="158.9" r="4.5" fill="#f43f5e"/>
-<text x="874.0" y="148.9" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">6.05 ms</text>
-<polyline points="82.0,372.7 346.0,366.6 610.0,362.0 874.0,354.7" fill="none" stroke="#38bdf8" stroke-width="2.6"/>
-<circle cx="82.0" cy="372.7" r="4.5" fill="#38bdf8"/>
-<text x="82.0" y="390.7" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.35 ms</text>
-<circle cx="346.0" cy="366.6" r="4.5" fill="#38bdf8"/>
-<text x="346.0" y="384.6" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.52 ms</text>
-<circle cx="610.0" cy="362.0" r="4.5" fill="#38bdf8"/>
-<text x="610.0" y="380.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.64 ms</text>
-<circle cx="874.0" cy="354.7" r="4.5" fill="#38bdf8"/>
-<text x="874.0" y="372.7" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.83 ms</text>
-<polyline points="82.0,118.0 346.0,118.0 610.0,118.0 874.0,120.1" fill="none" stroke="#34d399" stroke-width="2.6"/>
-<circle cx="82.0" cy="118.0" r="4.5" fill="#34d399"/>
-<text x="82.0" y="108.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.00</text>
-<circle cx="346.0" cy="118.0" r="4.5" fill="#34d399"/>
-<text x="346.0" y="108.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.00</text>
-<circle cx="610.0" cy="118.0" r="4.5" fill="#34d399"/>
-<text x="610.0" y="108.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.00</text>
-<circle cx="874.0" cy="120.1" r="4.5" fill="#34d399"/>
-<text x="874.0" y="110.1" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.99</text>
-<text x="82.0" y="412.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12.5" font-weight="600">200 vectors</text>
-<text x="82.0" y="430.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.6x faster</text>
-<text x="346.0" y="412.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12.5" font-weight="600">500 vectors</text>
-<text x="346.0" y="430.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">2.5x faster</text>
-<text x="610.0" y="412.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12.5" font-weight="600">1000 vectors</text>
-<text x="610.0" y="430.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">4.2x faster</text>
-<text x="874.0" y="412.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12.5" font-weight="600">2000 vectors</text>
-<text x="874.0" y="430.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">7.2x faster</text>
+<polyline points="118.0,375.8 358.0,320.7 598.0,286.6 838.0,158.9" fill="none" stroke="#f43f5e" stroke-width="2.6"/>
+<circle cx="118.0" cy="375.8" r="4.5" fill="#f43f5e"/>
+<text x="118.0" y="365.8" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.53 ms</text>
+<circle cx="358.0" cy="320.7" r="4.5" fill="#f43f5e"/>
+<text x="358.0" y="310.7" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">3.36 ms</text>
+<circle cx="598.0" cy="286.6" r="4.5" fill="#f43f5e"/>
+<text x="598.0" y="276.6" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">5.11 ms</text>
+<circle cx="838.0" cy="158.9" r="4.5" fill="#f43f5e"/>
+<text x="838.0" y="148.9" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">11.68 ms</text>
+<polyline points="118.0,380.1 358.0,362.2 598.0,361.1 838.0,352.2" fill="none" stroke="#38bdf8" stroke-width="2.6"/>
+<circle cx="118.0" cy="380.1" r="4.5" fill="#38bdf8"/>
+<text x="118.0" y="395.1" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.30 ms</text>
+<circle cx="358.0" cy="362.2" r="4.5" fill="#38bdf8"/>
+<text x="358.0" y="377.2" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.23 ms</text>
+<circle cx="598.0" cy="361.1" r="4.5" fill="#38bdf8"/>
+<text x="598.0" y="376.1" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.28 ms</text>
+<circle cx="838.0" cy="352.2" r="4.5" fill="#38bdf8"/>
+<text x="838.0" y="367.2" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.74 ms</text>
+<polyline points="118.0,118.0 358.0,118.0 598.0,118.0 838.0,120.1" fill="none" stroke="#34d399" stroke-width="2.6"/>
+<circle cx="118.0" cy="118.0" r="4.5" fill="#34d399"/>
+<text x="118.0" y="108.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.00</text>
+<circle cx="358.0" cy="118.0" r="4.5" fill="#34d399"/>
+<text x="358.0" y="108.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.00</text>
+<circle cx="598.0" cy="118.0" r="4.5" fill="#34d399"/>
+<text x="598.0" y="108.0" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.00</text>
+<circle cx="838.0" cy="120.1" r="4.5" fill="#34d399"/>
+<text x="838.0" y="110.1" text-anchor="middle" fill="#e2e8f0" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">0.99</text>
+<text x="118.0" y="412.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12.5" font-weight="600">200 vectors</text>
+<text x="118.0" y="430.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">1.73x faster</text>
+<text x="358.0" y="412.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12.5" font-weight="600">500 vectors</text>
+<text x="358.0" y="430.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">2.74x faster</text>
+<text x="598.0" y="412.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12.5" font-weight="600">1000 vectors</text>
+<text x="598.0" y="430.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">3.98x faster</text>
+<text x="838.0" y="412.0" text-anchor="middle" fill="#f8fafc" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="12.5" font-weight="600">2000 vectors</text>
+<text x="838.0" y="430.0" text-anchor="middle" fill="#94a3b8" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="11" font-weight="400">6.72x faster</text>
 </svg>

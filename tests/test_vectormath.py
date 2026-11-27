@@ -6,7 +6,9 @@ from raglab.vectormath import cosine_similarity, dot, norm, normalize
 
 
 def test_dot_product() -> None:
-    assert dot([1, 2, 3], [4, 5, 6]) == 32
+    value = dot([1, 2, 3], [4, 5, 6])
+    assert value == 32.0
+    assert isinstance(value, float)
 
 
 def test_dot_rejects_vectors_of_different_lengths() -> None:

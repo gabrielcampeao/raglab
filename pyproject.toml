@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 authors = [{ name = "Gabriel Campeao" }]
 keywords = ["rag", "llm", "qdrant", "pgvector", "retrieval", "reranking", "bm25", "mmr"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",

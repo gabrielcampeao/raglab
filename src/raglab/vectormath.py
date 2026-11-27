@@ -13,7 +13,7 @@ _sumprod: Callable[[Iterable[float], Iterable[float]], float] | None = getattr(
 
 def _fast_dot(a: Sequence[float], b: Sequence[float]) -> float:
     if _sumprod is not None:
-        return _sumprod(a, b)
+        return float(_sumprod(a, b))
     return float(sum(map(operator.mul, a, b)))
 
 

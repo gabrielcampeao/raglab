@@ -686,7 +686,7 @@ def render_latency_quality_svg(ablation: dict[str, Any]) -> str:
     )
 
     offsets = {
-        "bm25": (14, -12),
+        "bm25": (14, 22),
         "dense": (14, -12),
         "tfidf": (14, -12),
         "hybrid_rrf": (14, 18),
@@ -814,7 +814,8 @@ def render_hnsw_scaling_svg(rows: list[dict[str, float | int]]) -> str:
         out.append(_text(left - 12, y + 4, f"{frac * max_ms:.1f} ms", fill="#94a3b8", anchor="end"))
         out.append(_text(right + 12, y + 4, f"{frac:.1f}", fill="#34d399"))
 
-    xs = [left + idx * (plot_w / (len(rows) - 1)) for idx in range(len(rows))]
+    pad = 36.0
+    xs = [left + pad + idx * ((plot_w - 2 * pad) / (len(rows) - 1)) for idx in range(len(rows))]
 
     def draw_line(values: list[float], scale: float, color: str, fmt: str, dy: int) -> None:
         pts = [(xs[i], bottom - (values[i] / scale) * plot_h) for i in range(len(values))]
@@ -827,7 +828,7 @@ def render_hnsw_scaling_svg(rows: list[dict[str, float | int]]) -> str:
             )
 
     draw_line([float(r["exact_ms"]) for r in rows], max_ms, "#f43f5e", "{:.2f} ms", -10)
-    draw_line([float(r["hnsw_ms"]) for r in rows], max_ms, "#38bdf8", "{:.2f} ms", 18)
+    draw_line([float(r["hnsw_ms"]) for r in rows], max_ms, "#38bdf8", "{:.2f} ms", 15)
     draw_line([float(r["recall_at_5"]) for r in rows], 1.0, "#34d399", "{:.2f}", -10)
 
     for idx, row in enumerate(rows):
@@ -845,7 +846,7 @@ def render_hnsw_scaling_svg(rows: list[dict[str, float | int]]) -> str:
             _text(
                 xs[idx],
                 bottom + 44,
-                f"{float(row['speedup']):.1f}x faster",
+                f"{float(row['speedup']):.2f}x faster",
                 fill="#94a3b8",
                 size=11,
                 anchor="middle",

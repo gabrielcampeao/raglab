@@ -76,11 +76,11 @@ Every chart below is rendered deterministically from [benchmark_results.json](pr
 
 | Configuration | Chunks | Hit@1 | MRR@3 | NDCG@3 | Multi doc NDCG@3 | Trap abstention | Verified E2E | Mean latency |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `dense` (128d unigram hash, unfiltered) | 66 | 0.90 | 0.95 | 0.93 | 0.67 | 0.25 | 0.88 | 0.8 ms |
-| `tfidf` (unigram cosine, unfiltered) | 66 | 1.00 | 1.00 | 0.98 | 0.87 | 0.00 | 0.83 | 2.5 ms |
-| `bm25` (lexical Okapi BM25, unfiltered) | 66 | 1.00 | 1.00 | 0.98 | 0.87 | 0.00 | 0.83 | 0.3 ms |
-| `hybrid_rrf` (Dense + BM25 + metadata prefilter) | 66 | 1.00 | 1.00 | 0.96 | 0.74 | 0.00 | 0.83 | 2.9 ms |
-| `senior_full` (Markdown + Hybrid RRF + Rerank + MMR + Guardrail) | 43 | 1.00 | 1.00 | 1.00 | 0.97 | 1.00 | 0.96 | 3.2 ms |
+| `dense` (128d unigram hash, unfiltered) | 66 | 0.90 | 0.95 | 0.93 | 0.67 | 0.25 | 0.88 | 0.7 ms |
+| `tfidf` (unigram cosine, unfiltered) | 66 | 1.00 | 1.00 | 0.98 | 0.87 | 0.00 | 0.83 | 2.8 ms |
+| `bm25` (lexical Okapi BM25, unfiltered) | 66 | 1.00 | 1.00 | 0.98 | 0.87 | 0.00 | 0.83 | 0.4 ms |
+| `hybrid_rrf` (Dense + BM25 + metadata prefilter) | 66 | 1.00 | 1.00 | 0.96 | 0.74 | 0.00 | 0.83 | 3.0 ms |
+| `senior_full` (Markdown + Hybrid RRF + Rerank + MMR + Guardrail) | 43 | 1.00 | 1.00 | 1.00 | 0.97 | 1.00 | 0.96 | 3.1 ms |
 
 Key observations from the benchmark data:
 
@@ -106,7 +106,7 @@ Sweeping flat sentence `max_chars` from `140` to `1400` characters highlights wh
 
 ![HNSW approximate search scaling benchmark](docs/assets/hnsw_scaling_benchmark.svg)
 
-Growing the vector corpus `10x` from `200` to `2000` vectors (`24D` clustered unit embeddings, `k = 5`, `m = 16`, `ef_construction = 48`, `ef_search = 40`) increases exact linear scan latency by `10.4x` (`0.58 ms` to `6.05 ms`), while pure Python `HNSWVectorStore` grows only `2.35x` (`0.36 ms` to `0.83 ms`), delivering a `7.25x` speedup at `2000` vectors with `0.99` `Recall@5`.
+Growing the vector corpus `10x` from `200` to `2000` vectors (`24D` clustered unit embeddings, `k = 5`, `m = 16`, `ef_construction = 48`, `ef_search = 40`) increases exact linear scan latency from `0.53 ms` to `11.68 ms`, while pure Python `HNSWVectorStore` stays between `0.30 ms` and `1.74 ms`, delivering a `6.72x` speedup at `2000` vectors with `0.99` `Recall@5`.
 
 ## 4. Flagship system: Atlas Pay Incident Copilot
 

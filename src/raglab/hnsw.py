@@ -78,7 +78,7 @@ class HNSWVectorStore(VectorStore):
         entry_dist = _cosine_distance(query, self._vectors[entry])
         visited = {entry}
         candidates: list[tuple[float, int]] = [(entry_dist, entry)]
-        best: list[tuple[float, int]] = [(-entry_dist, entry)]
+        best: list[tuple[float, int]] = [(-entry_dist, -entry)]
 
         while candidates:
             cand_dist, cand_id = heapq.heappop(candidates)
@@ -92,11 +92,11 @@ class HNSWVectorStore(VectorStore):
                 dist = _cosine_distance(query, self._vectors[neighbor])
                 if len(best) < ef or dist < -best[0][0]:
                     heapq.heappush(candidates, (dist, neighbor))
-                    heapq.heappush(best, (-dist, neighbor))
+                    heapq.heappush(best, (-dist, -neighbor))
                     if len(best) > ef:
                         heapq.heappop(best)
 
-        ranked = [(-neg_dist, node_id) for neg_dist, node_id in best]
+        ranked = [(-neg_dist, -neg_id) for neg_dist, neg_id in best]
         ranked.sort(key=lambda pair: (pair[0], pair[1]))
         return ranked
 
@@ -157,7 +157,7 @@ class HNSWVectorStore(VectorStore):
                         (_cosine_distance(peer_vec, self._vectors[other]), other)
                         for other in peer_links
                     )
-                    self._neighbors[peer][layer] = [other for _, other in scored[:max_conn]]
+                    self._neighbors[peer][layer] = self._select_neighbors(scored, max_conn)
 
         if level > self._max_level:
             self._entry_point = node_id

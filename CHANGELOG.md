@@ -47,7 +47,7 @@ Notable changes to `raglab` follow [Keep a Changelog](https://keepachangelog.com
 
 ### Removed
 
-* Removed MIT license file and metadata.
+* Removed open source license file and package license metadata.
 
 ## [0.2.0] November 26, 2026
 

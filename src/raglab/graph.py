@@ -66,6 +66,71 @@ _STOP_ENTITIES = frozenset(
         "select",
         "group",
         "order",
+        "not",
+        "get",
+        "by",
+        "and",
+        "or",
+        "as",
+        "in",
+        "is",
+        "on",
+        "to",
+        "of",
+        "if",
+        "do",
+        "no",
+        "for",
+        "put",
+        "post",
+        "delete",
+        "head",
+        "null",
+        "true",
+        "false",
+        "into",
+        "join",
+        "left",
+        "right",
+        "inner",
+        "outer",
+        "like",
+        "desc",
+        "asc",
+        "limit",
+        "with",
+        "case",
+        "then",
+        "else",
+        "end",
+        "create",
+        "drop",
+        "alter",
+        "table",
+        "index",
+        "values",
+        "update",
+        "insert",
+        "count",
+        "sum",
+        "avg",
+        "min",
+        "max",
+        "now",
+        "utc",
+        "may",
+        "can",
+        "are",
+        "was",
+        "has",
+        "have",
+        "had",
+        "did",
+        "does",
+        "will",
+        "would",
+        "should",
+        "could",
         "symptoms",
         "diagnosis",
         "mitigation",
@@ -87,12 +152,16 @@ _STOP_ENTITIES = frozenset(
 )
 
 
+def _normalize_entity(raw: str) -> str:
+    return " ".join(raw.strip().strip(".,;:!?()").lower().split())
+
+
 def extract_entities(text: str) -> list[str]:
     found: list[str] = []
     seen: set[str] = set()
 
     def register(raw: str) -> None:
-        cleaned = " ".join(raw.strip().strip(".,;:!?()").lower().split())
+        cleaned = _normalize_entity(raw)
         if len(cleaned) < 2 or cleaned in _STOP_ENTITIES or cleaned in seen:
             return
         seen.add(cleaned)
@@ -121,9 +190,37 @@ class KnowledgeGraph:
     def entities(self) -> tuple[str, ...]:
         return tuple(sorted(self._entity_chunks))
 
+    def _remove_chunk(self, chunk_id: str) -> None:
+        previous = self._chunk_entities.pop(chunk_id, ())
+        if not previous:
+            return
+        for idx, left in enumerate(previous):
+            for right in previous[idx + 1 :]:
+                left_edges = self._adjacency.get(left)
+                if left_edges and right in left_edges:
+                    if left_edges[right] <= 1.0:
+                        del left_edges[right]
+                    else:
+                        left_edges[right] -= 1.0
+                right_edges = self._adjacency.get(right)
+                if right_edges and left in right_edges:
+                    if right_edges[left] <= 1.0:
+                        del right_edges[left]
+                    else:
+                        right_edges[left] -= 1.0
+        for entity in previous:
+            members = self._entity_chunks.get(entity)
+            if members is not None:
+                members.discard(chunk_id)
+                if not members:
+                    del self._entity_chunks[entity]
+                    self._adjacency.pop(entity, None)
+
     def add_chunk(self, chunk_id: str, entities: Sequence[str]) -> None:
+        if chunk_id in self._chunk_entities:
+            self._remove_chunk(chunk_id)
         unique = tuple(
-            dict.fromkeys(entity.strip().lower() for entity in entities if entity.strip())
+            dict.fromkeys(cleaned for entity in entities if (cleaned := _normalize_entity(entity)))
         )
         self._chunk_entities[chunk_id] = unique
         for entity in unique:
@@ -138,7 +235,7 @@ class KnowledgeGraph:
         return self._chunk_entities.get(chunk_id, ())
 
     def neighbors(self, entity: str) -> tuple[str, ...]:
-        edges = self._adjacency.get(entity.lower(), {})
+        edges = self._adjacency.get(_normalize_entity(entity), {})
         ordered = sorted(edges.items(), key=lambda pair: (-pair[1], pair[0]))
         return tuple(neighbor for neighbor, _ in ordered)
 
@@ -149,9 +246,13 @@ class KnowledgeGraph:
         hops: int = 2,
         decay: float = 0.45,
     ) -> dict[str, float]:
+        if hops < 0:
+            raise ValueError("hops cannot be negative")
+        if not 0.0 <= decay <= 1.0:
+            raise ValueError("decay must be between 0 and 1")
         active: dict[str, float] = {}
         for seed in seeds:
-            key = seed.lower()
+            key = _normalize_entity(seed)
             if key in self._entity_chunks:
                 active[key] = 1.0
         if not active or hops <= 0:

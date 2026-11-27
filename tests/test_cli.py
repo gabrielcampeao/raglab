@@ -211,3 +211,21 @@ def test_cli_ask_runs_against_hnsw_backend(capsys: pytest.CaptureFixture[str]) -
     assert "transaction" in output
     assert "postgres_pool_saturation.md" in output
     assert "Trace:" in output
+
+    search_code = main(
+        [
+            "search",
+            "SQLSTATE 53300 PgBouncer",
+            "--data",
+            str(corpus),
+            "--retriever",
+            "dense",
+            "--backend",
+            "hnsw",
+            "--k",
+            "2",
+        ]
+    )
+    search_output = capsys.readouterr().out
+    assert search_code == 0
+    assert "postgres_pool_saturation.md" in search_output

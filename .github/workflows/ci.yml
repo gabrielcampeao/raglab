@@ -41,7 +41,7 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install --upgrade pip
       - run: pip install -e ".[dev]"
-      - run: pytest tests/test_security_cache_query.py tests/test_verification.py -q
+      - run: pytest tests/test_security_cache_query.py tests/test_verification.py tests/test_server.py -q
 
   test:
     runs-on: ubuntu-latest
