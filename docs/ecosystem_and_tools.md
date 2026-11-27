@@ -8,12 +8,15 @@ Building a RAG system in production means deciding which components can stay sim
 
 Linear cosine scans (`InMemoryVectorStore`) inspect every stored vector on every query (`O(N * D)`). That is fast up to roughly `50,000` vectors in a single process, after which latency and memory persistence demand an Approximate Nearest Neighbor (`ANN`) index.
 
-Most production engines build on **HNSW (Hierarchical Navigable Small World)** graphs: layered proximity graphs where upper layers have long range skip edges for fast coarse navigation and layer 0 holds dense local neighborhoods. Query complexity drops to roughly `O(log N)` while maintaining `0.95` to `0.99` recall against exact search.
+Most production engines build on **HNSW (Hierarchical Navigable Small World)** graphs: layered proximity graphs where upper layers have long range skip edges for fast coarse navigation and layer 0 holds dense local neighborhoods. Query complexity drops to roughly `O(log N)` while maintaining `0.95` to `0.99` recall against exact search. `raglab` includes a transparent pure Python implementation in [hnsw.py](../src/raglab/hnsw.py) (`HNSWVectorStore`, selectable via `--backend hnsw`) so you can inspect greedy descent, beam search, heuristic neighbor pruning, and cardinality aware filter fallback directly before scaling out to Rust or C++ services.
+
+![HNSW approximate search scaling benchmark](assets/hnsw_scaling_benchmark.svg)
 
 ### Engineering comparison across vector stores
 
 | Engine | Storage & language | Index types | Filtered search mechanism | Best fit | Adapter in raglab |
 | --- | --- | --- | --- | --- | --- |
+| **raglab HNSW** | Pure Python stdlib (`in process`) | Layered HNSW (`m`, `ef_construction`, `ef_search`) | Beam prefilter with exact filtered fallback when fewer than `k` beam hits match | Teaching, prototyping, deterministic CI, and zero dependency deployments up to tens of thousands of vectors | [hnsw.py](../src/raglab/hnsw.py) (`HNSWVectorStore`) |
 | **Qdrant** | Rust (`mmap` + WAL, gRPC/REST) | Filterable HNSW, sparse inverted index, scalar `int8` & binary quantization | Cardinality aware planner switching between payload index scan and filterable HNSW graph links | Dedicated production vector & hybrid search from `100k` to `100M+` vectors with heavy metadata filtering | [qdrant.py](../src/raglab/integrations/qdrant.py) (`QdrantVectorStore`) |
 | **pgvector** | C extension inside PostgreSQL 16+ | HNSW (`vector_cosine_ops`), `IVFFlat` | Iterative HNSW index scans combined with native `JSONB` GIN indexes (`@>`) and relational SQL joins | Teams already running Postgres that need ACID transactional consistency between source rows and embeddings | [pgvector.py](../src/raglab/integrations/pgvector.py) (`PgVectorStore`) |
 | **Chroma** | Python + Rust core over SQLite + HNSW | HNSW (`cosine`, `l2`, `ip`) | Metadata predicate bitmap applied alongside HNSW traversal | Local desktop apps, notebooks, and single node services | [chroma.py](../src/raglab/integrations/chroma.py) (`ChromaVectorStore`) |

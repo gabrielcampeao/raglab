@@ -76,13 +76,46 @@ In multi turn troubleshooting, users rarely repeat the subject noun:
 
 Sent raw to a stateless retriever, Turn 2 contains no mention of `Postgres` or `pool saturation` and can match escalation sections from unrelated services. `ConversationalRAG` in [conversation.py](../src/raglab/conversation.py) detects anaphoric pronouns (`it`, `that`, `they`, `those`) and terse follow ups, extracts the primary section anchor from the prior turn (`Postgres connection pool saturation`), and retrieves with the anchored standalone query while preserving the user's original question on the returned `Answer`.
 
-## 6. Corrective RAG, Self RAG, and GraphRAG
+## 6. Corrective RAG, Self RAG, and Entity GraphRAG
 
-When extending `raglab` toward autonomous agent workflows, three additional paradigms apply:
+When single pass retrieval fails due to terse acronyms, overly narrow metadata filters, or disconnected evidence split across multiple files, three higher order patterns close the gap:
 
-* **Corrective RAG (Yan et al., 2024):** Inspects retrieval confidence and `GroundingReport` before returning an answer. When `answer.grounding.is_verified` is `False` or top reranker scores fall below a floor, a controller rewrites the query, widens metadata filters, or falls back to an external search tool.
+* **Corrective RAG (`CorrectiveRAG` in [corrective.py](../src/raglab/corrective.py)):** Implements the confidence gated control loop of Yan et al. (2024) directly over `RAGPipeline`. After each pass, `CorrectiveRAG` checks `top_score >= min_top_score`, `grounded_ratio >= min_grounded_ratio`, and `answer.grounding.is_verified`. When the first pass fails, it rewrites the query through `QueryExpander` (`decision="rewritten"`), relaxes restrictive metadata filters when permitted (`decision="relaxed_filters"`), or returns a clean verified abstention (`decision="abstained"`) with every attempt recorded in `CorrectiveOutcome.steps`.
+* **Entity GraphRAG (`EntityGraphRetriever` in [graph.py](../src/raglab/graph.py)):** Extracts operational entities (backtick identifiers, dotted config keys, error codes such as `SQLSTATE 53300`, acronyms, and service names) into an undirected weighted co occurrence `KnowledgeGraph`. At query time, seed entities propagate decaying activation energy across `hops` graph steps (`decay=0.45`) weighted by entity IDF, surfacing linked documents across multiple hops even when they share zero lexical tokens with the initial query. Full corpus wide synthesis extends this structure with hierarchical Leiden community summaries (Edge et al., 2024).
 * **Self RAG (Asai et al., 2023):** Trains or prompts the generator to emit explicit reflection decisions (whether retrieval is needed, whether each retrieved chunk supports the claim, and whether the final answer addresses the prompt). `verify_answer` provides a fast deterministic counterpart with zero extra model calls.
-* **GraphRAG (Edge et al., 2024):** Standard vector and BM25 RAG retrieves local passages (`top_k = 3..10`) and cannot answer global corpus wide questions such as *"What systemic themes connect all Q2 and Q3 postmortems?"*. GraphRAG extracts entity relationship triples during indexing, partitions the graph into hierarchical Leiden communities, and precomputes community summaries for map reduce synthesis.
+
+```python
+from raglab import (
+    AcronymQueryExpander,
+    CorrectiveRAG,
+    CrossTermReranker,
+    DenseRetriever,
+    EntityGraphRetriever,
+    HashingEmbedder,
+    HNSWVectorStore,
+    RAGPipeline,
+)
+
+pipeline = RAGPipeline(
+    retriever=DenseRetriever(HashingEmbedder(dimensions=256), HNSWVectorStore()),
+    reranker=CrossTermReranker(),
+    markdown_aware=True,
+    max_chars=340,
+)
+pipeline.ingest_directory("projects/incident_copilot/corpus")
+
+crag = CorrectiveRAG(
+    pipeline,
+    expander=AcronymQueryExpander({"oom": "OOMKilled exit code 137 memory limits"}),
+    min_top_score=0.30,
+)
+outcome = crag.ask("Why do checkout pods hit OOM?")
+print(outcome.decision, [step.action for step in outcome.steps])
+
+graph_pipeline = RAGPipeline(retriever=EntityGraphRetriever(hops=2, decay=0.45))
+graph_pipeline.ingest_directory("projects/incident_copilot/corpus")
+hits = graph_pipeline.retrieve("SQLSTATE 53300", k=3)
+```
 
 ## Primary research references
 

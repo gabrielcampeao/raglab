@@ -109,3 +109,12 @@ A pure Python SVG renderer in `scripts/generate_charts.py` executes the benchmar
 * **Lost in the Middle context ordering (`reorder_lost_in_middle` in `src/raglab/prompting.py`):** Transformer attention exhibits a U shaped primacy and recency bias across long contexts (Liu et al., 2024). Placing top ranked chunks at the start and end of the context block prevents rank 2 evidence from being buried in the middle.
 * **Multi turn coreference condensation (`ConversationalRAG` in `src/raglab/conversation.py`):** Follow up questions containing pronouns (`it`, `that`, `those`) lose retrieval recall unless anchored with salient entities from recent turns before querying the index.
 * **Research study guides (`docs/advanced_rag_patterns.md` and `docs/evaluation_and_failure_taxonomy.md`):** Document the mathematical foundations, architectural taxonomy (`docs/assets/advanced_rag_taxonomy.svg`), RAG Triad metrics, calibration matrices, and failure root cause playbooks.
+
+
+## Version 1.0 frontier extensions: HNSW, entity graph, and corrective loops
+
+### 11. How does version 1.0 bring approximate vector search, multi hop graph retrieval, and self correcting control loops into the zero dependency core?
+
+* **Pure Python HNSW (`HNSWVectorStore` in `src/raglab/hnsw.py`):** Implements the Malkov and Yashunin layered small world graph (`m`, `ef_construction`, `ef_search`), greedy upper layer descent, heuristic neighbor diversity pruning, and exact filtered fallback when a narrow metadata predicate leaves fewer than `k` beam hits. Exposed directly through `--backend hnsw` in `src/raglab/cli.py` and benchmarked against `InMemoryVectorStore` in `docs/assets/hnsw_scaling_benchmark.svg`.
+* **Multi hop Entity GraphRAG (`KnowledgeGraph` and `EntityGraphRetriever` in `src/raglab/graph.py`):** Extracts operational entities (error codes, backtick symbols, dotted configuration keys, acronyms, and service nouns), builds a weighted co occurrence graph across indexed chunks, and propagates decaying activation energy across configurable hop depth weighted by inverse entity frequency.
+* **Corrective RAG controller (`CorrectiveRAG` in `src/raglab/corrective.py`):** Wraps `RAGPipeline` with a deterministic verification gate checking retrieval score, grounded ratio, and citation validity. Failing passes automatically trigger acronym query rewriting, optional metadata filter relaxation, or verified abstention with a full `CorrectiveStep` audit trace.

@@ -2,6 +2,20 @@
 
 Notable changes to `raglab` follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Semantic Versioning](https://semver.org/).
 
+## [1.0.0] November 27, 2026
+
+### Added
+
+* Pure Python `HNSWVectorStore` (`src/raglab/hnsw.py`) implementing layered Hierarchical Navigable Small World approximate nearest neighbor search, heuristic neighbor selection, and exact filtered fallback, exposed via `--backend hnsw` in `src/raglab/cli.py`.
+* Multi hop `KnowledgeGraph`, `EntityGraphRetriever`, and `extract_entities` (`src/raglab/graph.py`) with decaying activation propagation and entity IDF weighting.
+* `CorrectiveRAG`, `CorrectiveStep`, and `CorrectiveOutcome` (`src/raglab/corrective.py`) implementing confidence gated query rewriting, automatic metadata filter relaxation, and verified abstention.
+* Runnable script `examples/08_hnsw_graph_corrective.py` and real scaling benchmark chart `docs/assets/hnsw_scaling_benchmark.svg` comparing exact cosine scan against `HNSWVectorStore`.
+* Per stage millisecond breakdown (`retrieval_ms`, `rerank_ms`, `generation_ms`) and escaped DOM rendering inside `raglab Inspector` (`src/raglab/server.py`).
+
+### Changed
+
+* Upgraded GitHub Actions CI workflows in `.github/workflows/ci.yml` to `actions/checkout@v7` and `actions/setup-python@v7` for native Node 24 runner execution with zero deprecation annotations.
+
 ## [0.5.0] November 27, 2026
 
 ### Added
