@@ -127,7 +127,10 @@ def urllib_transport(
         url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST"
     )
     with urllib.request.urlopen(request, timeout=timeout) as response:
-        return json.loads(response.read().decode("utf-8"))
+        parsed = json.loads(response.read().decode("utf-8"))
+    if not isinstance(parsed, dict):
+        raise GenerationError("API response must be a JSON object")
+    return parsed
 
 
 class OpenAICompatibleGenerator(Generator):

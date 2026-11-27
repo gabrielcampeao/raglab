@@ -1,3 +1,4 @@
+from raglab._version import __version__
 from raglab.cache import SemanticCache
 from raglab.chunking import (
     MarkdownSection,
@@ -48,11 +49,10 @@ from raglab.retrievers import (
     matches_filters,
 )
 from raglab.security import ContextSanitizer, SecurityFinding, strip_invisible_characters
+from raglab.server import create_server
 from raglab.telemetry import InMemoryTraceSink, JsonlTraceSink, TraceEvent, TraceSink
 from raglab.vectorstore import InMemoryVectorStore, VectorStore
 from raglab.verification import GroundingReport, verify_answer
-
-__version__ = "0.4.0"
 
 __all__ = [
     "DEFAULT_TEMPLATE",
@@ -102,6 +102,7 @@ __all__ = [
     "chunk_markdown_documents",
     "chunk_text",
     "create_retriever",
+    "create_server",
     "diversify_mmr",
     "estimate_tokens",
     "evaluate_by_category",

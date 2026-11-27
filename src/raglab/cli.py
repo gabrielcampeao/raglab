@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import argparse
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 from raglab import __version__
+from raglab.cache import SemanticCache
 from raglab.documents import load_directory
 from raglab.embeddings import HashingEmbedder
 from raglab.evaluation import evaluate_retrieval, load_cases
@@ -17,6 +18,7 @@ from raglab.generation import (
 from raglab.integrations.qdrant import QdrantVectorStore
 from raglab.models import Document
 from raglab.pipeline import RAGPipeline
+from raglab.query import MultiQueryRetriever
 from raglab.reranking import CrossTermReranker
 from raglab.retrievers import (
     RETRIEVER_NAMES,
@@ -26,6 +28,8 @@ from raglab.retrievers import (
     Retriever,
     create_retriever,
 )
+from raglab.security import ContextSanitizer
+from raglab.server import create_server
 
 PREVIEW_LENGTH = 110
 
@@ -69,6 +73,16 @@ def _add_ranking_options(parser: argparse.ArgumentParser) -> None:
         help="apply Maximal Marginal Relevance with lambda between 0 and 1",
     )
     parser.add_argument(
+        "--expand-queries",
+        action="store_true",
+        help="expand operational acronyms using multi query RRF fusion",
+    )
+    parser.add_argument(
+        "--sanitize",
+        action="store_true",
+        help="strip invisible characters and block indirect prompt injection",
+    )
+    parser.add_argument(
         "--filter",
         action="append",
         default=[],
@@ -102,6 +116,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--show-prompt", action="store_true", help="print the prompt sent to the model"
     )
     ask.add_argument(
+        "--cache",
+        action="store_true",
+        help="enable filter isolated semantic query caching",
+    )
+    ask.add_argument(
         "--show-trace",
         action="store_true",
         help="print stage latency and grounding verification details",
@@ -129,6 +148,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="apply Maximal Marginal Relevance with lambda between 0 and 1",
     )
     evaluate.set_defaults(handler=_run_evaluate)
+
+    serve = commands.add_parser("serve", help="start HTTP API and interactive RAG inspector")
+    _add_index_options(serve)
+    _add_ranking_options(serve)
+    serve.add_argument("--host", default="127.0.0.1", help="interface to bind")
+    serve.add_argument("--port", type=int, default=8000, help="TCP port to bind")
+    serve.add_argument("--max-tokens", type=int, default=260, help="maximum context token budget")
+    serve.add_argument("--generator", choices=("extractive", "openai"), default="extractive")
+    serve.add_argument("--model", default="gpt-4o-mini", help="model name for the openai generator")
+    serve.add_argument("--base-url", default=None, help="base URL of an OpenAI compatible API")
+    serve.add_argument("--cache", action="store_true", help="enable semantic query caching")
+    serve.set_defaults(handler=_run_serve)
     return parser
 
 
@@ -166,10 +197,12 @@ def _select_retriever(name: str, args: argparse.Namespace) -> Retriever:
         qdrant_url = getattr(args, "qdrant_url", None)
         store = QdrantVectorStore(url=qdrant_url)
         dense = DenseRetriever(HashingEmbedder(), store)
-        if name == "dense":
-            return dense
-        return HybridRetriever([dense, BM25Retriever()])
-    return create_retriever(name)
+        base: Retriever = dense if name == "dense" else HybridRetriever([dense, BM25Retriever()])
+    else:
+        base = create_retriever(name)
+    if getattr(args, "expand_queries", False):
+        return MultiQueryRetriever(base)
+    return base
 
 
 def _build_pipeline(
@@ -179,10 +212,14 @@ def _build_pipeline(
     generator: Generator | None = None,
 ) -> RAGPipeline:
     reranker = CrossTermReranker() if getattr(args, "rerank", False) else None
+    sanitizer = ContextSanitizer() if getattr(args, "sanitize", False) else None
+    cache = SemanticCache() if getattr(args, "cache", False) else None
     pipeline = RAGPipeline(
         _select_retriever(retriever_name, args),
         generator,
         reranker=reranker,
+        sanitizer=sanitizer,
+        cache=cache,
         mmr_lambda=getattr(args, "mmr", None),
         max_context_tokens=getattr(args, "max_tokens", None),
         markdown_aware=getattr(args, "markdown", False),
@@ -267,10 +304,28 @@ def _run_evaluate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_serve(args: argparse.Namespace) -> int:
+    documents = _load_documents(args.data)
+    pipeline = _build_pipeline(args, args.retriever, documents, _build_generator(args))
+    server = create_server(pipeline, host=args.host, port=args.port)
+    raw_host = server.server_address[0]
+    bound_host = raw_host.decode("utf-8") if isinstance(raw_host, bytes) else str(raw_host)
+    bound_port = server.server_address[1]
+    print(f"raglab Inspector listening on http://{bound_host}:{bound_port}")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
-        return args.handler(args)
+        handler: Callable[[argparse.Namespace], int] = args.handler
+        return handler(args)
     except (FileNotFoundError, ValueError, RuntimeError, GenerationError) as error:
         print(f"raglab: error: {error}", file=sys.stderr)
         return 1

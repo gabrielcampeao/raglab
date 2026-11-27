@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
@@ -11,7 +12,7 @@ _INTERNAL_KEYS = frozenset({"document_id", "position"})
 
 def _create_chroma_client(path: str | None, host: str | None, port: int) -> Any:
     try:
-        import chromadb
+        chromadb = importlib.import_module("chromadb")
     except ImportError as error:
         raise RuntimeError(
             "Chroma client is not installed. Install it with: pip install 'raglab[chroma]'"
